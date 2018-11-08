@@ -10,7 +10,8 @@ exports.DATABASE_ERROR = 'database_error';
 exports.databaseError = message => internalError(message, exports.DATABASE_ERROR);
 
 exports.MISSING_USER_INFORMATION = 'missing_user_information';
-exports.missingUserInformation = () => internalError(exports.MISSING_USER_INFORMATION, exports.MISSING_USER_INFORMATION);
+exports.missingUserInformation = () =>
+  internalError(exports.MISSING_USER_INFORMATION, exports.MISSING_USER_INFORMATION);
 
 exports.EMAIL_ALREADY_USED = 'email is already used';
 exports.emailAlreadyUsed = () => internalError(exports.EMAIL_ALREADY_USED, exports.EMAIL_ALREADY_USED);

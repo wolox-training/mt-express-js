@@ -13,9 +13,7 @@ const COLOMBIA_WOLOX_DOMAIN = /^\w+([\.-]?\w+)*@wolox\.co/;
 const CHILE_WOLOX_DOMAIN = /^\w+([\.-]?\w+)*@wolox\.cl/;
 
 const hasValidDomain = email =>
-  ARGENTINA_WOLOX_DOMAIN.test(email) || 
-  COLOMBIA_WOLOX_DOMAIN.test(email) ||
-  CHILE_WOLOX_DOMAIN.test(email);
+  ARGENTINA_WOLOX_DOMAIN.test(email) || COLOMBIA_WOLOX_DOMAIN.test(email) || CHILE_WOLOX_DOMAIN.test(email);
 
 const isValidPassword = password => password.length >= MIN_PASSWORD_LENGTH;
 
@@ -50,7 +48,6 @@ exports.signUp = (req, res, next) => {
     .then(() => encryptPassword(user.password))
     .then(hash => {
       user.password = hash;
-      console.log(user);
       return users.addUser(user);
     }) // Store the user into the database
     .then(() => res.status(200).send('User created!'))
