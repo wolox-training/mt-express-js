@@ -1,13 +1,16 @@
 'use strict';
 
+const logger = require('../logger');
+const errors = require('../errors');
+
 module.exports = (sequelize, DataTypes) => {
-  const user = sequelize.define(
-    'user',
+  const Users = sequelize.define(
+    'users',
     {
       id: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        selfIncrement: true,
+        autoIncrement: true,
         primaryKey: true
       },
 
@@ -33,9 +36,8 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false
       }
     },
-    {
-      timestamps: false,
 
+    {
       paranoid: true,
 
       underscored: true,
@@ -44,9 +46,21 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  user.associate = function(models) {
+  Users.associate = function(models) {
     // associations can be defined here
   };
 
-  return user;
+  Users.findUserByEmail = email =>
+    Users.findOne({ where: { email } }).catch(err => {
+      logger.error(err.detail);
+      throw errors.databaseError(err.detail);
+    });
+
+  Users.addUser = user =>
+    Users.create(user).catch(err => {
+      logger.error(err.detail);
+      throw errors.databaseError(err.detail);
+    });
+
+  return Users;
 };
