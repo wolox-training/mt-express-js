@@ -8,12 +8,18 @@ const SALT = 10; // to ensure security
 const MIN_PASSWORD_LENGTH = 8;
 
 // Regex for Email domain validation
-const ARGENTINA_WOLOX_DOMAIN = /^\w+([\.-]?\w+)*@wolox\.com\.ar/;
-const COLOMBIA_WOLOX_DOMAIN = /^\w+([\.-]?\w+)*@wolox\.co/;
-const CHILE_WOLOX_DOMAIN = /^\w+([\.-]?\w+)*@wolox\.cl/;
+const ARGENTINA_WOLOX_DOMAIN = 'wolox.com.ar';
+const COLOMBIA_WOLOX_DOMAIN = 'wolox.co';
+const CHILE_WOLOX_DOMAIN = 'wolox.cl';
 
-const hasValidDomain = email =>
-  ARGENTINA_WOLOX_DOMAIN.test(email) || COLOMBIA_WOLOX_DOMAIN.test(email) || CHILE_WOLOX_DOMAIN.test(email);
+const hasValidDomain = email => {
+  const splitEmail = email.split('@');
+  return (
+    splitEmail[1] === ARGENTINA_WOLOX_DOMAIN ||
+    splitEmail[1] === COLOMBIA_WOLOX_DOMAIN ||
+    splitEmail[1] === CHILE_WOLOX_DOMAIN
+  );
+};
 
 const isValidPassword = password => password.length >= MIN_PASSWORD_LENGTH;
 
