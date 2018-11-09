@@ -17,7 +17,7 @@ const hasNoEmptyFields = user => user.email && user.password && user.firstName &
 const hasValidDomain = email =>
   ARGENTINA_WOLOX_DOMAIN.test(email) || COLOMBIA_WOLOX_DOMAIN.test(email) || CHILE_WOLOX_DOMAIN.test(email);
 
-const hasValidPassword = password => password >= MIN_PASSWORD_LENGTH;
+const hasValidPassword = password => password.length >= MIN_PASSWORD_LENGTH;
 
 const hasValidFields = user =>
   new Promise((resolve, reject) => {
