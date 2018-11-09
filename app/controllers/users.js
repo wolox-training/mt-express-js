@@ -12,47 +12,42 @@ const ARGENTINA_WOLOX_DOMAIN = new RegExp('@wolox.com.ar');
 const COLOMBIA_WOLOX_DOMAIN = new RegExp('@wolox.co');
 const CHILE_WOLOX_DOMAIN = new RegExp('@wolox.cl');
 
-const hasNoEmptyFields = user =>
-  new Promise((resolve, reject) => {
-    if (user.email && user.password && user.firstName && user.lastName) {
-      resolve();
-    } else {
-      logger.error(errors.MISSING_USER_INFORMATION);
-      throw errors.missingUserInformation();
-    }
-  });
+const hasNoEmptyFields = user => user.email && user.password && user.firstName && user.lastName;
 
 const hasValidDomain = email =>
-  new Promise((resolve, reject) => {
-    if (
-      ARGENTINA_WOLOX_DOMAIN.test(email) ||
-      COLOMBIA_WOLOX_DOMAIN.test(email) ||
-      CHILE_WOLOX_DOMAIN.test(email)
-    ) {
-      resolve();
-    } else {
-      logger.error(errors.INVALID_EMAIL_DOMAIN);
-      throw errors.invalidEmailDomain();
-    }
-  });
+  ARGENTINA_WOLOX_DOMAIN.test(email) || COLOMBIA_WOLOX_DOMAIN.test(email) || CHILE_WOLOX_DOMAIN.test(email);
 
-const hasValidPassword = password =>
+const hasValidPassword = password => password >= MIN_PASSWORD_LENGTH;
+
+const hasValidFields = user =>
   new Promise((resolve, reject) => {
-    if (password.length < MIN_PASSWORD_LENGTH) {
-      logger.error(errors.INVALID_PASSWORD);
-      throw errors.invalidPassword();
-    } else {
-      resolve();
+    if (!hasNoEmptyFields(user)) {
+      reject(errors.missingUserInformation());
     }
+
+    if (!hasValidPassword(user.password)) {
+      reject(errors.invalidPassword());
+    }
+
+    if (!hasValidDomain(user.email)) {
+      reject(errors.invalidEmailDomain());
+    }
+
+    resolve();
   });
 
 const hasUniqueEmail = email =>
-  users.findUserByEmail(email).then(foundUser => {
-    if (foundUser) {
-      logger.error('Email already used');
-      throw errors.emailAlreadyUsed();
-    }
-  });
+  users.findUserByEmail(email).then(
+    foundUser =>
+      new Promise((resolve, reject) => {
+        if (!foundUser) {
+          resolve();
+        } else {
+          logger.error(errors.EMAIL_ALREADY_USED);
+          reject(errors.emailAlreadyUsed());
+        }
+      })
+  );
 
 const encryptPassword = password =>
   bcrypt.hash(password, SALT).catch(err => {
@@ -63,10 +58,8 @@ const encryptPassword = password =>
 exports.signUp = (req, res, next) => {
   const user = req.body;
 
-  hasNoEmptyFields(user)
-    .then(() => hasValidDomain(user.email))
+  hasValidFields(user)
     .then(() => hasUniqueEmail(user.email))
-    .then(() => hasValidPassword(user.password))
     .then(() => encryptPassword(user.password))
     .then(hash => {
       user.password = hash;
