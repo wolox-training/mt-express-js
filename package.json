@@ -50,7 +50,8 @@
     "sequelize": "^4.34.0",
     "umzug": "^2.1.0",
     "winston": "^2.4.0",
-    "winston-daily-rotate-file": "^1.7.2"
+    "winston-daily-rotate-file": "^1.7.2",
+    "moment": "^2.22.2"
   },
   "devDependencies": {
     "babel": "6.23.0",

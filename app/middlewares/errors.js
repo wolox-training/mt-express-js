@@ -8,7 +8,11 @@ const statusCodes = {
   [errors.BOOK_NOT_FOUND]: 404,
   [errors.SAVING_ERROR]: 400,
   [errors.DATABASE_ERROR]: 503,
-  [errors.DEFAULT_ERROR]: 500
+  [errors.DEFAULT_ERROR]: 500,
+  [errors.MISSING_USER_INFORMATION]: 400,
+  [errors.INVALID_EMAIL_DOMAIN]: 400,
+  [errors.INVALID_PASSWORD_FORMAT]: 400,
+  [errors.INVALID_EMAIL_DOMAIN]: 400
 };
 
 exports.handle = (error, req, res, next) => {
