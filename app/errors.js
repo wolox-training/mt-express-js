@@ -19,5 +19,6 @@ exports.emailAlreadyUsed = () => internalError(exports.EMAIL_ALREADY_USED, expor
 exports.INVALID_EMAIL_DOMAIN = 'Invalid email domain';
 exports.invalidEmailDomain = () => internalError(exports.INVALID_EMAIL_DOMAIN, exports.INVALID_EMAIL_DOMAIN);
 
-exports.INVALID_PASSWORD = 'Invalid Password';
-exports.invalidPassword = () => internalError(exports.INVALID_PASSWORD, exports.INVALID_PASSWORD);
+exports.INVALID_PASSWORD_FORMAT = 'Invalid Password format';
+exports.invalidPasswordFormat = () =>
+  internalError('Password has to be atleast 8 characters long', exports.INVALID_PASSWORD_FORMAT);

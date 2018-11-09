@@ -26,7 +26,7 @@ const hasValidFields = user =>
     }
 
     if (!hasValidPassword(user.password)) {
-      reject(errors.invalidPassword());
+      reject(errors.invalidPasswordFormat());
     }
 
     if (!hasValidDomain(user.email)) {
