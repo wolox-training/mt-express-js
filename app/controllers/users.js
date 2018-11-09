@@ -8,27 +8,41 @@ const SALT = 10; // to ensure security
 const MIN_PASSWORD_LENGTH = 8;
 
 // Regex for Email domain validation
-const ARGENTINA_WOLOX_DOMAIN = 'wolox.com.ar';
-const COLOMBIA_WOLOX_DOMAIN = 'wolox.co';
-const CHILE_WOLOX_DOMAIN = 'wolox.cl';
+const ARGENTINA_WOLOX_DOMAIN = new RegExp('@wolox.com.ar');
+const COLOMBIA_WOLOX_DOMAIN = new RegExp('@wolox.co');
+const CHILE_WOLOX_DOMAIN = new RegExp('@wolox.cl');
 
-const hasValidDomain = email => {
-  const splitEmail = email.split('@');
-  return (
-    splitEmail[1] === ARGENTINA_WOLOX_DOMAIN ||
-    splitEmail[1] === COLOMBIA_WOLOX_DOMAIN ||
-    splitEmail[1] === CHILE_WOLOX_DOMAIN
-  );
-};
-
-const isValidPassword = password => password.length >= MIN_PASSWORD_LENGTH;
-
-const validUser = user =>
+const hasNoEmptyFields = user =>
   new Promise((resolve, reject) => {
-    if (hasValidDomain(user.email) && isValidPassword(user.password)) {
+    if (user.email && user.password && user.firstName && user.lastName) {
       resolve();
     } else {
-      reject(errors.invalidEmailDomain());
+      logger.error(errors.MISSING_USER_INFORMATION);
+      throw errors.missingUserInformation();
+    }
+  });
+
+const hasValidDomain = email =>
+  new Promise((resolve, reject) => {
+    if (
+      ARGENTINA_WOLOX_DOMAIN.test(email) ||
+      COLOMBIA_WOLOX_DOMAIN.test(email) ||
+      CHILE_WOLOX_DOMAIN.test(email)
+    ) {
+      resolve();
+    } else {
+      logger.error(errors.INVALID_EMAIL_DOMAIN);
+      throw errors.invalidEmailDomain();
+    }
+  });
+
+const hasValidPassword = password =>
+  new Promise((resolve, reject) => {
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      logger.error(errors.INVALID_PASSWORD);
+      throw errors.invalidPassword();
+    } else {
+      resolve();
     }
   });
 
@@ -49,13 +63,15 @@ const encryptPassword = password =>
 exports.signUp = (req, res, next) => {
   const user = req.body;
 
-  validUser(user)
+  hasNoEmptyFields(user)
+    .then(() => hasValidDomain(user.email))
     .then(() => hasUniqueEmail(user.email))
+    .then(() => hasValidPassword(user.password))
     .then(() => encryptPassword(user.password))
     .then(hash => {
       user.password = hash;
       return users.addUser(user);
-    }) // Store the user into the database
+    })
     .then(() => res.status(200).send('User created!'))
     .catch(next);
 };
