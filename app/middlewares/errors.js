@@ -13,7 +13,7 @@ const statusCodes = {
   [errors.INVALID_EMAIL_DOMAIN]: 400,
   [errors.INVALID_PASSWORD_FORMAT]: 400,
   [errors.INVALID_EMAIL_DOMAIN]: 400,
-  [errors.EMAIL_ALREADY_IN_USE]: 400
+  [errors.EMAIL_ALREADY_USED]: 400
 };
 
 exports.handle = (error, req, res, next) => {
