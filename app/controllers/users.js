@@ -73,15 +73,23 @@ exports.signUp = (req, res, next) => {
 exports.signIn = (req, res, next) => {
   const user = req.body;
 
+  if (!hasValidDomain(user.email)) return next(errors.invalidCredentials());
+
   users
     .findUserByEmail(user.email)
-    .then(foundUser => bcrypt.compare(user.password, foundUser.password))
-    .then(() => {
-      jwt.sign({ user }, 'secret', (err, token) => {
-        res.json({
-          token
-        });
-      });
+    .then(foundUser => {
+      if (foundUser) {
+        return bcrypt.compare(user.password, foundUser.password);
+      } else {
+        return next(errors.invalidCredentials());
+      }
+    })
+    .then(valid => {
+      if (!valid) {
+        return next(errors.invalidCredentials());
+      }
+      const token = jwt.sign({ user: user.email }, 'secret');
+      res.status(200).send({ token });
     })
     .catch(next);
 };
