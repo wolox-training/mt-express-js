@@ -56,6 +56,12 @@ module.exports = (sequelize, DataTypes) => {
       throw errors.databaseError(err.detail);
     });
 
+  Users.findUser = (email, password) =>
+    Users.findOne({ where: { email } && { password } }).catch(err => {
+      logger.error(err.detail);
+      throw errors.databaseError(err.detail);
+    });
+
   Users.addUser = user =>
     Users.create(user).catch(err => {
       logger.error(err.detail);

@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const errors = require('../errors');
 const userServices = require('../services/users');
 const logger = require('../logger');
+const jwt = require('jsonwebtoken');
 
 const SALT = 10; // to ensure security
 const MIN_PASSWORD_LENGTH = 8;
@@ -68,3 +69,10 @@ exports.signUp = (req, res, next) => {
     .then(() => res.status(200).send('User created!'))
     .catch(next);
 };
+
+const validateCredentials = user =>
+  // Validate Domain
+  // Hash the password
+  // Search for a user with the provided email and password
+  // return the user
+  hasValidDomain(user.email).find(() => findUser(user));
