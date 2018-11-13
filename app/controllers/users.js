@@ -70,9 +70,18 @@ exports.signUp = (req, res, next) => {
     .catch(next);
 };
 
-const validateCredentials = user =>
-  // Validate Domain
-  // Hash the password
-  // Search for a user with the provided email and password
-  // return the user
-  hasValidDomain(user.email).find(() => findUser(user));
+exports.signIn = (req, res, next) => {
+  const user = req.body;
+
+  users
+    .findUserByEmail(user.email)
+    .then(foundUser => bcrypt.compare(user.password, foundUser.password))
+    .then(() => {
+      jwt.sign({ user }, 'secret', (err, token) => {
+        res.json({
+          token
+        });
+      });
+    })
+    .catch(next);
+};
