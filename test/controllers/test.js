@@ -19,8 +19,8 @@ describe('User Tests', () => {
           })
           .then(res => {
             res.should.have.status(200);
+            done();
           });
-        done();
       });
     });
     context('An user is previously created so that an already used email exists', () => {
