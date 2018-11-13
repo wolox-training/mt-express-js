@@ -123,6 +123,7 @@ describe('User Tests', () => {
           })
           .then(res => {
             res.should.have.status(200);
+            res.body.should.have.property('token');
             done();
           });
       });
