@@ -167,4 +167,31 @@ describe('User Tests', () => {
       });
     });
   });
+  /* describe('/users GET', () => {
+    beforeEach('Se crean 3 usuarios', done => {
+      chai
+        .request(server)
+        .post('/signup')
+        .send({
+          email: 'miguel.toscano@wolox.com.ar',
+          password: '12345678',
+          firstName: 'Miguel',
+          lastName: 'Toscano'
+        })
+        .send({
+          email: 'mauricio.macri@wolox.com.ar',
+          password: '12345678',
+          firstName: 'Mauricio',
+          lastName: 'Macri'
+        })
+        .send({
+          email: 'marcelo.tinelli@wolox.com.ar',
+          password: '12345678',
+          firstName: 'Marcelo',
+          lastName: 'Tinelli'
+        })
+        .then(() => done());
+    });
+  });
+  context(''); */
 });

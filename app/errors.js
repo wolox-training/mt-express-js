@@ -25,3 +25,7 @@ exports.invalidPasswordFormat = () =>
 
 exports.INVALID_CREDENTIALS = 'Invalid credentials';
 exports.invalidCredentials = () => internalError(exports.INVALID_CREDENTIALS, exports.INVALID_CREDENTIALS);
+
+exports.AUTHENTICATION_FAILURE = 'Authentication failure';
+exports.authenticationFailure = () =>
+  internalError(exports.AUTHENTICATION_FAILURE, exports.AUTHENTICATION_FAILURE);
