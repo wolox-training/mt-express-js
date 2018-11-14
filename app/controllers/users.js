@@ -110,6 +110,8 @@ exports.listUsers = (req, res, next) => {
   const limit = req.query.limit || LIMIT_DEFAULT;
   const page = req.query.page || PAGE_DEFAULT;
 
+  console.log(req.headers);
+
   if (!authenticationHeader) return next(errors.authenticationFailure());
 
   users
