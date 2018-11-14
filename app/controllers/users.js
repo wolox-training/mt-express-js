@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const errors = require('../errors');
 const userServices = require('../services/users');
 const logger = require('../logger');
-const jwt = require('jsonwebtoken');
+const jwt = require('jwt-simple');
 
 const SALT = 10; // to ensure security
 const MIN_PASSWORD_LENGTH = 8;
@@ -88,7 +88,7 @@ exports.signIn = (req, res, next) => {
       if (!valid) {
         return next(errors.invalidCredentials());
       }
-      const token = jwt.sign({ user: user.email }, 'secret');
+      const token = jwt.encode({ user: user.email }, 'secret');
       res.status(200).send({ token });
     })
     .catch(next);
