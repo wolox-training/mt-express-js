@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const errors = require('../errors');
 const userServices = require('../services/users');
 const logger = require('../logger');
+const jwt = require('jwt-simple');
 
 const SALT = 10; // to ensure security
 const MIN_PASSWORD_LENGTH = 8;
@@ -40,12 +41,9 @@ const hasUniqueEmail = email =>
   users.findUserByEmail(email).then(
     foundUser =>
       new Promise((resolve, reject) => {
-        if (!foundUser) {
-          resolve();
-        } else {
-          logger.error(errors.EMAIL_ALREADY_USED);
-          reject(errors.emailAlreadyUsed());
-        }
+        if (!foundUser) resolve();
+        logger.error(errors.EMAIL_ALREADY_USED);
+        reject(errors.emailAlreadyUsed());
       })
   );
 
@@ -66,5 +64,24 @@ exports.signUp = (req, res, next) => {
       return users.addUser(user);
     })
     .then(() => res.status(200).send('User created!'))
+    .catch(next);
+};
+
+exports.signIn = (req, res, next) => {
+  const user = req.body;
+
+  if (!hasValidDomain(user.email)) return next(errors.invalidCredentials());
+
+  users
+    .findUserByEmail(user.email)
+    .then(foundUser => {
+      if (foundUser) return bcrypt.compare(user.password, foundUser.password);
+      return next(errors.invalidCredentials());
+    })
+    .then(valid => {
+      if (!valid) return next(errors.invalidCredentials());
+      const token = jwt.encode({ user: user.email }, 'secret');
+      res.status(200).send({ token });
+    })
     .catch(next);
 };

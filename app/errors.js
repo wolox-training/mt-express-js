@@ -22,3 +22,6 @@ exports.invalidEmailDomain = () => internalError(exports.INVALID_EMAIL_DOMAIN, e
 exports.INVALID_PASSWORD_FORMAT = 'Invalid Password format';
 exports.invalidPasswordFormat = () =>
   internalError('Password has to be atleast 8 characters long', exports.INVALID_PASSWORD_FORMAT);
+
+exports.INVALID_CREDENTIALS = 'Invalid credentials';
+exports.invalidCredentials = () => internalError(exports.INVALID_CREDENTIALS, exports.INVALID_CREDENTIALS);
