@@ -80,16 +80,11 @@ exports.signIn = (req, res, next) => {
   users
     .findUserByEmail(user.email)
     .then(foundUser => {
-      if (foundUser) {
-        return bcrypt.compare(user.password, foundUser.password);
-      } else {
-        return next(errors.invalidCredentials());
-      }
+      if (foundUser) return bcrypt.compare(user.password, foundUser.password);
+      return next(errors.invalidCredentials());
     })
     .then(valid => {
-      if (!valid) {
-        return next(errors.invalidCredentials());
-      }
+      if (!valid) return next(errors.invalidCredentials());
       const token = jwt.encode({ user: user.email }, 'secret');
       res.status(200).send({ token });
     })
@@ -109,8 +104,6 @@ exports.listUsers = (req, res, next) => {
   const authenticationHeader = req.headers.authorization;
   const limit = req.query.limit || LIMIT_DEFAULT;
   const page = req.query.page || PAGE_DEFAULT;
-
-  console.log(req.headers);
 
   if (!authenticationHeader) return next(errors.authenticationFailure());
 
