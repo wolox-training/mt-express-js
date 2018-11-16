@@ -179,6 +179,7 @@ describe('User Tests', () => {
       });
     });
   });
+<<<<<<< HEAD
   describe('/users GET', () => {
     beforeEach('3 users are succesfully created', done => {
       signUpUser('miguel.toscano@wolox.com.ar')
@@ -209,4 +210,6 @@ describe('User Tests', () => {
       });
     });
   });
+=======
+>>>>>>> master
 });

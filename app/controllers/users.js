@@ -43,12 +43,9 @@ const hasUniqueEmail = email =>
   users.findUserByEmail(email).then(
     foundUser =>
       new Promise((resolve, reject) => {
-        if (!foundUser) {
-          resolve();
-        } else {
-          logger.error(errors.EMAIL_ALREADY_USED);
-          reject(errors.emailAlreadyUsed());
-        }
+        if (!foundUser) resolve();
+        logger.error(errors.EMAIL_ALREADY_USED);
+        reject(errors.emailAlreadyUsed());
       })
   );
 
@@ -90,6 +87,7 @@ exports.signIn = (req, res, next) => {
     })
     .catch(next);
 };
+<<<<<<< HEAD
 
 const sendAllUsers = (res, allUsers) => {
   const usersAmount = allUsers.length;
@@ -112,3 +110,5 @@ exports.listUsers = (req, res, next) => {
     .then(allUsers => sendAllUsers(res, allUsers))
     .catch(next);
 };
+=======
+>>>>>>> master
