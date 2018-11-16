@@ -4,6 +4,18 @@ const chai = require('chai'),
   should = chai.should(),
   logger = require('../../app/logger');
 
+const signUpUser = email => {
+  return chai
+    .request(server)
+    .post('/signup')
+    .send({
+      email,
+      password: '12345678',
+      firstName: 'Miguel',
+      lastName: 'Toscano'
+    });
+};
+
 describe('User Tests', () => {
   describe('/signup POST', () => {
     context('', () => {
@@ -100,7 +112,7 @@ describe('User Tests', () => {
   });
 
   describe('/signin POST', () => {
-    beforeEach('Se crea un usuario', done => {
+    beforeEach('A user is created', done => {
       chai
         .request(server)
         .post('/signup')
@@ -112,7 +124,7 @@ describe('User Tests', () => {
         })
         .then(() => done());
     });
-    context('A user was preoviously created', () => {
+    context('A user was previously created', () => {
       it('Signing in with correct email and password should succeed', done => {
         chai
           .request(server)
@@ -167,31 +179,34 @@ describe('User Tests', () => {
       });
     });
   });
-  /* describe('/users GET', () => {
+  describe('/users GET', () => {
     beforeEach('Se crean 3 usuarios', done => {
-      chai
-        .request(server)
-        .post('/signup')
-        .send({
-          email: 'miguel.toscano@wolox.com.ar',
-          password: '12345678',
-          firstName: 'Miguel',
-          lastName: 'Toscano'
-        })
-        .send({
-          email: 'mauricio.macri@wolox.com.ar',
-          password: '12345678',
-          firstName: 'Mauricio',
-          lastName: 'Macri'
-        })
-        .send({
-          email: 'marcelo.tinelli@wolox.com.ar',
-          password: '12345678',
-          firstName: 'Marcelo',
-          lastName: 'Tinelli'
-        })
+      signUpUser('miguel.toscano@wolox.com.ar')
+        .then(signUpUser('hola@wolox.com.ar'))
+        .then(signUpUser('chau@wolox.com.ar'))
         .then(() => done());
     });
+    context('Se logea con un usuario', () => {
+      it('Se listan todos los usuarios de manera exitosa', done => {
+        chai
+          .request(server)
+          .post('/signin')
+          .send({
+            email: 'miguel.toscano@wolox.com.ar',
+            password: '12345678'
+          })
+          .then(res2 => {
+            const token2 = res2.body.token;
+            chai
+              .request(server)
+              .get('/users')
+              .set('authorization', token2)
+              .then(res => {
+                res.should.have.status(200);
+                done();
+              });
+          });
+      });
+    });
   });
-  context(''); */
 });
