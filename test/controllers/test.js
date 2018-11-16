@@ -180,14 +180,14 @@ describe('User Tests', () => {
     });
   });
   describe('/users GET', () => {
-    beforeEach('Se crean 3 usuarios', done => {
+    beforeEach('3 users are succesfully created', done => {
       signUpUser('miguel.toscano@wolox.com.ar')
         .then(signUpUser('hola@wolox.com.ar'))
         .then(signUpUser('chau@wolox.com.ar'))
         .then(() => done());
     });
-    context('Se logea con un usuario', () => {
-      it('Se listan todos los usuarios de manera exitosa', done => {
+    context('A user is logged in', () => {
+      it('All user are listed succesfully', done => {
         chai
           .request(server)
           .post('/signin')
@@ -205,7 +205,7 @@ describe('User Tests', () => {
                 res.should.have.status(200);
                 done();
               });
-          });
+            });
       });
     });
   });
