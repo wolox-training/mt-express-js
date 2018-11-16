@@ -10,9 +10,7 @@ const MIN_PASSWORD_LENGTH = 8;
 const LIMIT_DEFAULT = 50;
 const PAGE_DEFAULT = 1;
 
-// User roles
-const ADMIN_ROLE = 'admin';
-const REGULAR_ROLE = 'regular';
+const KEY = 'secret';
 
 // Regex for Email domain validation
 const ARGENTINA_WOLOX_DOMAIN = new RegExp('@wolox.com.ar');
@@ -67,10 +65,13 @@ exports.signUp = (req, res, next) => {
     .then(() => encryptPassword(user.password))
     .then(hash => {
       user.password = hash;
-      user.role = REGULAR_ROLE;
       return users.addUser(user);
     })
-    .then(() => res.status(200).send('User created!'))
+    .then(() =>
+      res.status(200).send({
+        message: 'User created'
+      })
+    )
     .catch(next);
 };
 
@@ -87,7 +88,7 @@ exports.signIn = (req, res, next) => {
     })
     .then(valid => {
       if (!valid) return next(errors.invalidCredentials());
-      const token = jwt.encode({ user: user.email }, 'secret');
+      const token = jwt.encode({ user: user.email }, KEY);
       res.status(200).send({ token });
     })
     .catch(next);
@@ -103,7 +104,7 @@ const sendAllUsers = (res, allUsers) => {
 };
 
 exports.listUsers = (req, res, next) => {
-  const authenticationHeader = req.headers.authorization; // token
+  const authenticationHeader = req.headers.authorization;
   const limit = req.query.limit || LIMIT_DEFAULT;
   const page = req.query.page || PAGE_DEFAULT;
 

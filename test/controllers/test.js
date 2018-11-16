@@ -182,8 +182,8 @@ describe('User Tests', () => {
   describe('/users GET', () => {
     beforeEach('3 users are succesfully created', done => {
       signUpUser('miguel.toscano@wolox.com.ar')
-        .then(signUpUser('hola@wolox.com.ar'))
-        .then(signUpUser('chau@wolox.com.ar'))
+        .then(() => signUpUser('hola@wolox.com.ar'))
+        .then(() => signUpUser('chau@wolox.com.ar'))
         .then(() => done());
     });
     context('A user is logged in', () => {
