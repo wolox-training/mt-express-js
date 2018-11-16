@@ -14,12 +14,9 @@ const statusCodes = {
   [errors.INVALID_PASSWORD_FORMAT]: 400,
   [errors.INVALID_EMAIL_DOMAIN]: 400,
   [errors.EMAIL_ALREADY_USED]: 400,
-<<<<<<< HEAD
   [errors.INVALID_CREDENTIALS]: 400,
-  [errors.AUTHENTICATION_FAILURE]: 400
-=======
+  [errors.AUTHENTICATION_FAILURE]: 400,
   [errors.INVALID_CREDENTIALS]: 400
->>>>>>> master
 };
 
 exports.handle = (error, req, res, next) => {

@@ -87,7 +87,6 @@ exports.signIn = (req, res, next) => {
     })
     .catch(next);
 };
-<<<<<<< HEAD
 
 const sendAllUsers = (res, allUsers) => {
   const usersAmount = allUsers.length;
@@ -110,5 +109,3 @@ exports.listUsers = (req, res, next) => {
     .then(allUsers => sendAllUsers(res, allUsers))
     .catch(next);
 };
-=======
->>>>>>> master
