@@ -10,6 +10,10 @@ const MIN_PASSWORD_LENGTH = 8;
 const LIMIT_DEFAULT = 50;
 const PAGE_DEFAULT = 1;
 
+// User roles
+const ADMIN_ROLE = "admin";
+const REGULAR_ROLE = "regular";
+
 // Regex for Email domain validation
 const ARGENTINA_WOLOX_DOMAIN = new RegExp('@wolox.com.ar');
 const COLOMBIA_WOLOX_DOMAIN = new RegExp('@wolox.co');
@@ -109,3 +113,5 @@ exports.listUsers = (req, res, next) => {
     .then(allUsers => sendAllUsers(res, allUsers))
     .catch(next);
 };
+
+exports.

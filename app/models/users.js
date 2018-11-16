@@ -35,6 +35,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false
       }
+
+      role: {
+        type: DataTypes.STRING,
+        allowNull: false;
+      }
     },
 
     {
@@ -52,12 +57,6 @@ module.exports = (sequelize, DataTypes) => {
 
   Users.findUserByEmail = email =>
     Users.findOne({ where: { email } }).catch(err => {
-      logger.error(err.detail);
-      throw errors.databaseError(err.detail);
-    });
-
-  Users.findUser = (email, password) =>
-    Users.findOne({ where: { email } && { password } }).catch(err => {
       logger.error(err.detail);
       throw errors.databaseError(err.detail);
     });
