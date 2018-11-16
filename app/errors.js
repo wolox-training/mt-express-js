@@ -29,3 +29,6 @@ exports.invalidCredentials = () => internalError(exports.INVALID_CREDENTIALS, ex
 exports.AUTHENTICATION_FAILURE = 'Authentication failure';
 exports.authenticationFailure = () =>
   internalError(exports.AUTHENTICATION_FAILURE, exports.AUTHENTICATION_FAILURE);
+
+exports.NO_ACCESS_PERMITION = 'No access permission';
+exports.noAccesPermission = () => internalError(exports.NO_ACCESS_PERMITION, exports.NO_ACCESS_PERMITION);
