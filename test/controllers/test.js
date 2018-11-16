@@ -100,7 +100,7 @@ describe('User Tests', () => {
   });
 
   describe('/signin POST', () => {
-    beforeEach('Se crea un usuario', done => {
+    beforeEach('A user is created', done => {
       chai
         .request(server)
         .post('/signup')
@@ -112,7 +112,7 @@ describe('User Tests', () => {
         })
         .then(() => done());
     });
-    context('A user was preoviously created', () => {
+    context('A user was previously created', () => {
       it('Signing in with correct email and password should succeed', done => {
         chai
           .request(server)
