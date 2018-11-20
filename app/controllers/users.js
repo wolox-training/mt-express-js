@@ -4,6 +4,7 @@ const errors = require('../errors');
 const userServices = require('../services/users');
 const logger = require('../logger');
 const jwt = require('jwt-simple');
+const tokenManager = require('../services/tokenManager');
 
 const SALT = 10; // to ensure security
 const MIN_PASSWORD_LENGTH = 8;
@@ -62,7 +63,7 @@ const encryptPassword = password =>
 
 exports.signUp = (req, res, next) => {
   const user = req.body;
-  user.role = REGULAR_ROLE;
+  user.role = user.role || REGULAR_ROLE;
 
   hasValidFields(user)
     .then(() => hasUniqueEmail(user.email))
@@ -87,12 +88,15 @@ exports.signIn = (req, res, next) => {
   users
     .findUserByEmail(user.email)
     .then(foundUser => {
-      if (foundUser) return bcrypt.compare(user.password, foundUser.password);
+      if (foundUser) {
+        user.role = foundUser.role;
+        return bcrypt.compare(user.password, foundUser.password);
+      }
       return next(errors.invalidCredentials());
     })
     .then(valid => {
       if (!valid) return next(errors.invalidCredentials());
-      const token = jwt.encode({ user: user.email }, KEY);
+      const token = tokenManager.createToken(user);
       res.status(200).send({ token });
     })
     .catch(next);
@@ -123,23 +127,17 @@ exports.listUsers = (req, res, next) => {
 const validatePermission = token =>
   new Promise((resolve, reject) => {
     if (!token) reject(errors.authenticationFailure());
-    const decodedToken = jwt.decode(token, KEY);
+    const decodedToken = tokenManager.decodeToken(token);
+    console.log(decodedToken);
     if (decodedToken.role !== ADMIN_ROLE) reject(errors.noAccessPermission());
-    resolve(decodedToken);
+    resolve(token);
   });
 
 // Only an admin can add another admin
 exports.addAdmin = (req, res, next) => {
   const authenticationHeader = req.headers.authorization;
   const user = req.body;
-
-  // 1. Check if the provided user information is valid
-  // 2. Check if the user is an admin
-  // 3. if the user already exists, change its role to
-  //    admin, else create a new one with an admin role
-
-  // Remember to ask Alan if i should exchange the order the first
-  // two functions
+  console.log(authenticationHeader);
   validatePermission(authenticationHeader)
     .then(() => hasValidFields(user))
     .then(() => users.findUserByEmail(user.email))
@@ -152,13 +150,19 @@ exports.addAdmin = (req, res, next) => {
         foundUser.updateAttributes({
           role: ADMIN_ROLE
         });
+        res.status(200).send(foundUser);
       } else {
         encryptPassword(user.password).then(hash => {
           user.password = hash;
           user.role = ADMIN_ROLE;
           users.addUser(user);
+          res.status(200).send(user);
         });
       }
     })
     .catch(next);
 };
+
+// MOVE CODIFICATION AND DECODIFICATION TO SERVICES [checkec]
+// CHANGE CODIFICATION [checked]
+// TEST [dev]

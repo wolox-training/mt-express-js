@@ -187,7 +187,7 @@ describe('User Tests', () => {
         .then(() => done());
     });
     context('A user is logged in', () => {
-      it('All user are listed succesfully', done => {
+      it('All users are listed succesfully', done => {
         chai
           .request(server)
           .post('/signin')
@@ -203,6 +203,47 @@ describe('User Tests', () => {
               .set('authorization', token2)
               .then(res => {
                 res.should.have.status(200);
+                done();
+              });
+          });
+      });
+    });
+  });
+  describe('/admin/users POST', () => {
+    beforeEach('An admin is created', done => {
+      chai
+        .request(server)
+        .post('/signup')
+        .send({
+          email: 'miguel.toscano@wolox.com.ar',
+          password: '12345678',
+          firstName: 'Miguel',
+          lastName: 'Toscano'
+        })
+        .then(() => done());
+    });
+    context('An admin is logged in', () => {
+      it('A new user is added as an admin', done => {
+        chai
+          .request(server)
+          .post('/signin')
+          .send({
+            email: 'miguel.toscano@wolox.com.ar',
+            password: '12345678'
+          })
+          .then(res => {
+            const token = res.body.token;
+            chai
+              .request(server)
+              .post('/admin/users')
+              .send({
+                email: 'peter.parker@wolox.com.ar',
+                password: '12345678',
+                firstName: 'Peter',
+                lastName: 'Parker'
+              })
+              .then(finalRes => {
+                finalRes.should.have.status(200);
                 done();
               });
           });

@@ -75,7 +75,7 @@ module.exports = (sequelize, DataTypes) => {
 
   Users.getAllUsers = (page, limit) =>
     Users.findAll({
-      attributes: ['firstName', 'lastName', 'email'],
+      attributes: ['firstName', 'lastName', 'email', 'role'],
       limit,
       offset: (page - 1) * limit
     }).catch(err => {
