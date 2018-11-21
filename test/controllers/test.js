@@ -208,5 +208,16 @@ describe('User Tests', () => {
           });
       });
     });
+    context('A user is not logged in', () => {
+      it('request should fail when a user isnt logged in', done => {
+        chai
+          .request(server)
+          .get('/users')
+          .catch(err => {
+            err.should.have.status(401);
+            done();
+          });
+      });
+    });
   });
 });
