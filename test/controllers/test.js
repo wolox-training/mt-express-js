@@ -182,12 +182,21 @@ describe('User Tests', () => {
   describe('/users GET', () => {
     beforeEach('3 users are succesfully created', done => {
       signUpUser('miguel.toscano@wolox.com.ar')
+<<<<<<< HEAD
         .then(signUpUser('hola@wolox.com.ar'))
         .then(signUpUser('chau@wolox.com.ar'))
         .then(() => done());
     });
     context('A user is logged in', () => {
       it('All users are listed succesfully', done => {
+=======
+        .then(() => signUpUser('hola@wolox.com.ar'))
+        .then(() => signUpUser('chau@wolox.com.ar'))
+        .then(() => done());
+    });
+    context('A user is logged in', () => {
+      it('All user are listed succesfully', done => {
+>>>>>>> 15f053c994f9c3c4fb667adc4d7b9bf804291564
         chai
           .request(server)
           .post('/signin')
@@ -203,11 +212,16 @@ describe('User Tests', () => {
               .set('authorization', token2)
               .then(res => {
                 res.should.have.status(200);
+<<<<<<< HEAD
+=======
+                should.equal(res.body.count, 3);
+>>>>>>> 15f053c994f9c3c4fb667adc4d7b9bf804291564
                 done();
               });
           });
       });
     });
+<<<<<<< HEAD
   });
   describe('/admin/users POST', () => {
     beforeEach('An admin is created', done => {
@@ -221,6 +235,18 @@ describe('User Tests', () => {
           lastName: 'Toscano'
         })
         .then(() => done());
+=======
+    context('A user is not logged in', () => {
+      it('request should fail when a user isnt logged in', done => {
+        chai
+          .request(server)
+          .get('/users')
+          .catch(err => {
+            err.should.have.status(401);
+            done();
+          });
+      });
+>>>>>>> 15f053c994f9c3c4fb667adc4d7b9bf804291564
     });
   });
 });

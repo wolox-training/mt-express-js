@@ -11,9 +11,12 @@ const MIN_PASSWORD_LENGTH = 8;
 const LIMIT_DEFAULT = 50;
 const PAGE_DEFAULT = 1;
 
+<<<<<<< HEAD
 const ADMIN_ROLE = 'admin';
 const REGULAR_ROLE = 'regular';
 
+=======
+>>>>>>> 15f053c994f9c3c4fb667adc4d7b9bf804291564
 const KEY = 'secret';
 
 // Regex for Email domain validation
@@ -92,12 +95,17 @@ exports.signIn = (req, res, next) => {
     })
     .then(valid => {
       if (!valid) return next(errors.invalidCredentials());
+<<<<<<< HEAD
       const token = tokenManager.createToken(user);
+=======
+      const token = jwt.encode({ user: user.email }, KEY);
+>>>>>>> 15f053c994f9c3c4fb667adc4d7b9bf804291564
       res.status(200).send({ token });
     })
     .catch(next);
 };
 
+<<<<<<< HEAD
 const sendAllUsers = (res, allUsers) => {
   const usersAmount = allUsers.length;
   const response = {
@@ -107,6 +115,8 @@ const sendAllUsers = (res, allUsers) => {
   res.status(200).send(response);
 };
 
+=======
+>>>>>>> 15f053c994f9c3c4fb667adc4d7b9bf804291564
 exports.listUsers = (req, res, next) => {
   const authenticationHeader = req.headers.authorization;
   const limit = req.query.limit || LIMIT_DEFAULT;
@@ -121,6 +131,7 @@ exports.listUsers = (req, res, next) => {
     })
     .catch(next);
 };
+<<<<<<< HEAD
 
 const validatePermission = token =>
   new Promise((resolve, reject) => {
@@ -157,3 +168,5 @@ exports.addAdmin = (req, res, next) => {
     })
     .catch(next);
 };
+=======
+>>>>>>> 15f053c994f9c3c4fb667adc4d7b9bf804291564
