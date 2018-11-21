@@ -7,6 +7,10 @@ const jwt = require('jwt-simple');
 
 const SALT = 10; // to ensure security
 const MIN_PASSWORD_LENGTH = 8;
+const LIMIT_DEFAULT = 50;
+const PAGE_DEFAULT = 1;
+
+const KEY = 'secret';
 
 // Regex for Email domain validation
 const ARGENTINA_WOLOX_DOMAIN = new RegExp('@wolox.com.ar');
@@ -63,14 +67,18 @@ exports.signUp = (req, res, next) => {
       user.password = hash;
       return users.addUser(user);
     })
-    .then(() => res.status(200).send('User created!'))
+    .then(() =>
+      res.status(200).send({
+        message: 'User created'
+      })
+    )
     .catch(next);
 };
 
 exports.signIn = (req, res, next) => {
   const user = req.body;
 
-  if (!hasValidDomain(user.email)) return next(errors.invalidCredentials());
+  if (!hasValidDomain(user.email)) return next(errors.invalidEmailDomain());
 
   users
     .findUserByEmail(user.email)
@@ -80,8 +88,23 @@ exports.signIn = (req, res, next) => {
     })
     .then(valid => {
       if (!valid) return next(errors.invalidCredentials());
-      const token = jwt.encode({ user: user.email }, 'secret');
+      const token = jwt.encode({ user: user.email }, KEY);
       res.status(200).send({ token });
+    })
+    .catch(next);
+};
+
+exports.listUsers = (req, res, next) => {
+  const authenticationHeader = req.headers.authorization;
+  const limit = req.query.limit || LIMIT_DEFAULT;
+  const page = req.query.page || PAGE_DEFAULT;
+
+  if (!authenticationHeader) return next(errors.authenticationFailure());
+
+  users
+    .getAllUsers(page, limit)
+    .then(allUsers => {
+      res.status(200).send(allUsers);
     })
     .catch(next);
 };

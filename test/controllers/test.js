@@ -4,6 +4,18 @@ const chai = require('chai'),
   should = chai.should(),
   logger = require('../../app/logger');
 
+const signUpUser = email => {
+  return chai
+    .request(server)
+    .post('/signup')
+    .send({
+      email,
+      password: '12345678',
+      firstName: 'Miguel',
+      lastName: 'Toscano'
+    });
+};
+
 describe('User Tests', () => {
   describe('/signup POST', () => {
     context('', () => {
@@ -136,7 +148,7 @@ describe('User Tests', () => {
             password: '123456789' // Incorrect password
           })
           .catch(err => {
-            err.should.have.status(400);
+            err.should.have.status(401);
             done();
           });
       });
@@ -149,7 +161,7 @@ describe('User Tests', () => {
             password: '12345678'
           })
           .catch(err => {
-            err.should.have.status(400);
+            err.should.have.status(401);
             done();
           });
       });
@@ -162,6 +174,48 @@ describe('User Tests', () => {
           })
           .catch(err => {
             err.should.have.status(400);
+            done();
+          });
+      });
+    });
+  });
+  describe('/users GET', () => {
+    beforeEach('3 users are succesfully created', done => {
+      signUpUser('miguel.toscano@wolox.com.ar')
+        .then(() => signUpUser('hola@wolox.com.ar'))
+        .then(() => signUpUser('chau@wolox.com.ar'))
+        .then(() => done());
+    });
+    context('A user is logged in', () => {
+      it('All user are listed succesfully', done => {
+        chai
+          .request(server)
+          .post('/signin')
+          .send({
+            email: 'miguel.toscano@wolox.com.ar',
+            password: '12345678'
+          })
+          .then(res2 => {
+            const token2 = res2.body.token;
+            chai
+              .request(server)
+              .get('/users')
+              .set('authorization', token2)
+              .then(res => {
+                res.should.have.status(200);
+                should.equal(res.body.count, 3);
+                done();
+              });
+          });
+      });
+    });
+    context('A user is not logged in', () => {
+      it('request should fail when a user isnt logged in', done => {
+        chai
+          .request(server)
+          .get('/users')
+          .catch(err => {
+            err.should.have.status(401);
             done();
           });
       });
