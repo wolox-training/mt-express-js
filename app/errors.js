@@ -30,5 +30,5 @@ exports.AUTHENTICATION_FAILURE = 'Authentication failure';
 exports.authenticationFailure = () =>
   internalError(exports.AUTHENTICATION_FAILURE, exports.AUTHENTICATION_FAILURE);
 
-exports.NO_ACCESS_PERMISSION = 'No access permission';
-exports.noAccessPermission = () => internalError(exports.NO_ACCESS_PERMISSION, exports.NO_ACCESS_PERMISSION);
+exports.NO_ACCESS_PERMITION = 'No access permission';
+exports.noAccesPermission = () => internalError(exports.NO_ACCESS_PERMITION, exports.NO_ACCESS_PERMITION);

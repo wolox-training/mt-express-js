@@ -173,7 +173,7 @@ describe('User Tests', () => {
             email: 'miguel.toscano@gmail.com' // Invalid email domain
           })
           .catch(err => {
-            err.should.have.status(401);
+            err.should.have.status(400);
             done();
           });
       });
@@ -221,33 +221,6 @@ describe('User Tests', () => {
           lastName: 'Toscano'
         })
         .then(() => done());
-    });
-    context('An admin is logged in', () => {
-      it('A new user is added as an admin', done => {
-        chai
-          .request(server)
-          .post('/signin')
-          .send({
-            email: 'miguel.toscano@wolox.com.ar',
-            password: '12345678'
-          })
-          .then(res => {
-            const token = res.body.token;
-            chai
-              .request(server)
-              .post('/admin/users')
-              .send({
-                email: 'peter.parker@wolox.com.ar',
-                password: '12345678',
-                firstName: 'Peter',
-                lastName: 'Parker'
-              })
-              .then(finalRes => {
-                finalRes.should.have.status(200);
-                done();
-              });
-          });
-      });
     });
   });
 });

@@ -63,7 +63,6 @@ const encryptPassword = password =>
 
 exports.signUp = (req, res, next) => {
   const user = req.body;
-  user.role = user.role || REGULAR_ROLE;
 
   hasValidFields(user)
     .then(() => hasUniqueEmail(user.email))
@@ -83,15 +82,12 @@ exports.signUp = (req, res, next) => {
 exports.signIn = (req, res, next) => {
   const user = req.body;
 
-  if (!hasValidDomain(user.email)) return next(errors.invalidCredentials());
+  if (!hasValidDomain(user.email)) return next(errors.invalidEmailDomain());
 
   users
     .findUserByEmail(user.email)
     .then(foundUser => {
-      if (foundUser) {
-        user.role = foundUser.role;
-        return bcrypt.compare(user.password, foundUser.password);
-      }
+      if (foundUser) return bcrypt.compare(user.password, foundUser.password);
       return next(errors.invalidCredentials());
     })
     .then(valid => {
@@ -120,7 +116,9 @@ exports.listUsers = (req, res, next) => {
 
   users
     .getAllUsers(page, limit)
-    .then(allUsers => sendAllUsers(res, allUsers))
+    .then(allUsers => {
+      res.status(200).send(allUsers);
+    })
     .catch(next);
 };
 
@@ -128,7 +126,6 @@ const validatePermission = token =>
   new Promise((resolve, reject) => {
     if (!token) reject(errors.authenticationFailure());
     const decodedToken = tokenManager.decodeToken(token);
-    console.log(decodedToken);
     if (decodedToken.role !== ADMIN_ROLE) reject(errors.noAccessPermission());
     resolve(token);
   });
@@ -137,7 +134,6 @@ const validatePermission = token =>
 exports.addAdmin = (req, res, next) => {
   const authenticationHeader = req.headers.authorization;
   const user = req.body;
-  console.log(authenticationHeader);
   validatePermission(authenticationHeader)
     .then(() => hasValidFields(user))
     .then(() => users.findUserByEmail(user.email))
