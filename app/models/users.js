@@ -63,12 +63,12 @@ module.exports = (sequelize, DataTypes) => {
     });
 
   Users.getAllUsers = (page, limit) =>
-    Users.findAll({
+    Users.findAndCountAll({
       attributes: ['firstName', 'lastName', 'email'],
       limit,
       offset: (page - 1) * limit
     }).catch(err => {
-      logger.errors(err.detail);
+      logger.errors(err.details);
       throw errors.databaseError(err.detail);
     });
 

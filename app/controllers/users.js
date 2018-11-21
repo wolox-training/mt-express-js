@@ -78,7 +78,7 @@ exports.signUp = (req, res, next) => {
 exports.signIn = (req, res, next) => {
   const user = req.body;
 
-  if (!hasValidDomain(user.email)) return next(errors.invalidCredentials());
+  if (!hasValidDomain(user.email)) return next(errors.invalidEmailDomain());
 
   users
     .findUserByEmail(user.email)
@@ -94,15 +94,6 @@ exports.signIn = (req, res, next) => {
     .catch(next);
 };
 
-const sendAllUsers = (res, allUsers) => {
-  const usersAmount = allUsers.length;
-  const response = {
-    usersAmount,
-    allUsers
-  };
-  res.status(200).send(response);
-};
-
 exports.listUsers = (req, res, next) => {
   const authenticationHeader = req.headers.authorization;
   const limit = req.query.limit || LIMIT_DEFAULT;
@@ -112,6 +103,8 @@ exports.listUsers = (req, res, next) => {
 
   users
     .getAllUsers(page, limit)
-    .then(allUsers => sendAllUsers(res, allUsers))
+    .then(allUsers => {
+      res.status(200).send(allUsers);
+    })
     .catch(next);
 };

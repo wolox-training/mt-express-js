@@ -173,7 +173,7 @@ describe('User Tests', () => {
             email: 'miguel.toscano@gmail.com' // Invalid email domain
           })
           .catch(err => {
-            err.should.have.status(401);
+            err.should.have.status(400);
             done();
           });
       });
