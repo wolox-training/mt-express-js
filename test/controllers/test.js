@@ -203,6 +203,7 @@ describe('User Tests', () => {
               .set('authorization', token2)
               .then(res => {
                 res.should.have.status(200);
+                should.equal(res.body.count, 3);
                 done();
               });
           });
