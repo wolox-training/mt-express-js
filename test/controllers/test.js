@@ -148,7 +148,7 @@ describe('User Tests', () => {
             password: '123456789' // Incorrect password
           })
           .catch(err => {
-            err.should.have.status(400);
+            err.should.have.status(401);
             done();
           });
       });
@@ -161,7 +161,7 @@ describe('User Tests', () => {
             password: '12345678'
           })
           .catch(err => {
-            err.should.have.status(400);
+            err.should.have.status(401);
             done();
           });
       });
@@ -173,7 +173,7 @@ describe('User Tests', () => {
             email: 'miguel.toscano@gmail.com' // Invalid email domain
           })
           .catch(err => {
-            err.should.have.status(400);
+            err.should.have.status(401);
             done();
           });
       });
