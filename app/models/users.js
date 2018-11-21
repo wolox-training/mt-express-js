@@ -34,11 +34,6 @@ module.exports = (sequelize, DataTypes) => {
       password: {
         type: DataTypes.STRING,
         allowNull: false
-      },
-
-      role: {
-        type: DataTypes.STRING,
-        allowNull: false
       }
     },
 
@@ -61,12 +56,6 @@ module.exports = (sequelize, DataTypes) => {
       throw errors.databaseError(err.detail);
     });
 
-  Users.findUser = (email, password) =>
-    Users.findOne({ where: { email } && { password } }).catch(err => {
-      logger.error(err.detail);
-      throw errors.databaseError(err.detail);
-    });
-
   Users.addUser = user =>
     Users.create(user).catch(err => {
       logger.error(err.detail);
@@ -75,7 +64,7 @@ module.exports = (sequelize, DataTypes) => {
 
   Users.getAllUsers = (page, limit) =>
     Users.findAll({
-      attributes: ['firstName', 'lastName', 'email', 'role'],
+      attributes: ['firstName', 'lastName', 'email'],
       limit,
       offset: (page - 1) * limit
     }).catch(err => {

@@ -146,7 +146,6 @@ exports.addAdmin = (req, res, next) => {
         bcrypt.compare(user.password, foundUser.password, (err, result) => {
           if (err) throw errors.invalidCredentials();
         });
-        // Change foundUser's role here
         foundUser.updateAttributes({
           role: ADMIN_ROLE
         });
@@ -162,7 +161,3 @@ exports.addAdmin = (req, res, next) => {
     })
     .catch(next);
 };
-
-// MOVE CODIFICATION AND DECODIFICATION TO SERVICES [checkec]
-// CHANGE CODIFICATION [checked]
-// TEST [dev]
