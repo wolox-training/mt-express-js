@@ -156,21 +156,3 @@ exports.addAdmin = (req, res, next) => {
     })
     .catch(next);
 };
-
-// exports.signUp = (req, res, next) => {
-//   const user = req.body;
-//   user.role = req.body.role || REGULAR_ROLE;
-//   hasValidFields(user)
-//     .then(() => hasUniqueEmail(user.email))
-//     .then(() => encryptPassword(user.password))
-//     .then(hash => {
-//       user.password = hash;
-//       return users.addUser(user);
-//     })
-//     .then(() =>
-//       res.status(200).send({
-//         message: 'User created'
-//       })
-//     )
-//     .catch(next);
-// };
