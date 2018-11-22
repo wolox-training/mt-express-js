@@ -14,8 +14,6 @@ const PAGE_DEFAULT = 1;
 const ADMIN_ROLE = 'admin';
 const REGULAR_ROLE = 'regular';
 
-const KEY = 'secret';
-
 // Regex for Email domain validation
 const ARGENTINA_WOLOX_DOMAIN = new RegExp('@wolox.com.ar');
 const COLOMBIA_WOLOX_DOMAIN = new RegExp('@wolox.co');
@@ -63,7 +61,7 @@ const encryptPassword = password =>
 
 exports.signUp = (req, res, next) => {
   const user = req.body;
-
+  user.role = req.body.role || REGULAR_ROLE;
   hasValidFields(user)
     .then(() => hasUniqueEmail(user.email))
     .then(() => encryptPassword(user.password))
@@ -80,14 +78,18 @@ exports.signUp = (req, res, next) => {
 };
 
 exports.signIn = (req, res, next) => {
-  const user = req.body;
+  let user = req.body;
 
   if (!hasValidDomain(user.email)) return next(errors.invalidEmailDomain());
 
   users
     .findUserByEmail(user.email)
     .then(foundUser => {
-      if (foundUser) return bcrypt.compare(user.password, foundUser.password);
+      const tempPassword = user.password;
+      user = foundUser;
+      if (foundUser) {
+        return bcrypt.compare(tempPassword, foundUser.password);
+      }
       return next(errors.invalidCredentials());
     })
     .then(valid => {
@@ -115,7 +117,7 @@ exports.listUsers = (req, res, next) => {
 
 const validatePermission = token =>
   new Promise((resolve, reject) => {
-    if (!token) reject(errors.authenticationFailure());
+    if (!token) reject(errors.noAccessPermission());
     const decodedToken = tokenManager.decodeToken(token);
     if (decodedToken.role !== ADMIN_ROLE) reject(errors.noAccessPermission());
     resolve(token);
@@ -123,10 +125,9 @@ const validatePermission = token =>
 
 // Only an admin can add another admin
 exports.addAdmin = (req, res, next) => {
-  const authenticationHeader = req.headers.authorization;
-  const user = req.body;
-  validatePermission(authenticationHeader)
-    .then(() => hasValidFields(user))
+  const user = req.body.user;
+
+  validatePermission(req.body.token)
     .then(() => users.findUserByEmail(user.email))
     .then(foundUser => {
       if (foundUser) {
@@ -136,15 +137,40 @@ exports.addAdmin = (req, res, next) => {
         foundUser.updateAttributes({
           role: ADMIN_ROLE
         });
-        res.status(200).send(foundUser);
+        const token = tokenManager.createToken(foundUser);
+        res.status(200).send({ token });
       } else {
-        encryptPassword(user.password).then(hash => {
-          user.password = hash;
-          user.role = ADMIN_ROLE;
-          users.addUser(user);
-          res.status(200).send(user);
-        });
+        hasValidFields(user)
+          .then(() => hasUniqueEmail(user.email))
+          .then(() => encryptPassword(user.password))
+          .then(hash => {
+            user.password = hash;
+            user.role = ADMIN_ROLE;
+            users.addUser(user);
+          })
+          .then(() => {
+            const token = tokenManager.createToken(user);
+            res.status(200).send({ token });
+          });
       }
     })
     .catch(next);
 };
+
+// exports.signUp = (req, res, next) => {
+//   const user = req.body;
+//   user.role = req.body.role || REGULAR_ROLE;
+//   hasValidFields(user)
+//     .then(() => hasUniqueEmail(user.email))
+//     .then(() => encryptPassword(user.password))
+//     .then(hash => {
+//       user.password = hash;
+//       return users.addUser(user);
+//     })
+//     .then(() =>
+//       res.status(200).send({
+//         message: 'User created'
+//       })
+//     )
+//     .catch(next);
+// };

@@ -2,7 +2,8 @@ const chai = require('chai'),
   dictum = require('dictum.js'),
   server = require('../../app'),
   should = chai.should(),
-  logger = require('../../app/logger');
+  logger = require('../../app/logger'),
+  tokenManager = require('../../app/services/tokenManager');
 
 const signUpUser = email => {
   return chai
@@ -27,7 +28,8 @@ describe('User Tests', () => {
             email: 'miguel.toscano@wolox.com.ar',
             password: '12345678',
             firstName: 'Miguel',
-            lastName: 'Toscano'
+            lastName: 'Toscano',
+            role: 'admin'
           })
           .then(res => {
             res.should.have.status(200);
@@ -44,7 +46,8 @@ describe('User Tests', () => {
             email: 'miguel.toscano@wolox.com.ar',
             password: '12345678',
             firstName: 'Miguel',
-            lastName: 'Toscano'
+            lastName: 'Toscano',
+            role: 'admin'
           })
           .then(() => {
             chai
@@ -72,7 +75,8 @@ describe('User Tests', () => {
             email: 'miguel.toscano@wolox.com.ar',
             password: '1234567',
             firstName: 'Miguel',
-            lastName: 'Toscano'
+            lastName: 'Toscano',
+            role: 'admin'
           })
           .catch(err => {
             err.should.have.status(400);
@@ -86,7 +90,8 @@ describe('User Tests', () => {
           .send({
             email: 'miguel.toscano@wolox.com.ar',
             password: '12345678',
-            lastName: 'Toscano'
+            lastName: 'Toscano',
+            role: 'admin'
           })
           .catch(err => {
             err.should.have.status(400);
@@ -101,7 +106,8 @@ describe('User Tests', () => {
             email: 'miguel.toscano@gmail.com',
             password: '12345678',
             firstName: 'Miguel',
-            lastName: 'Toscano'
+            lastName: 'Toscano',
+            role: 'admin'
           })
           .catch(err => {
             err.should.have.status(400);
@@ -120,7 +126,8 @@ describe('User Tests', () => {
           email: 'miguel.toscano@wolox.com.ar',
           password: '12345678',
           firstName: 'Miguel',
-          lastName: 'Toscano'
+          lastName: 'Toscano',
+          role: 'admin'
         })
         .then(() => done());
     });
@@ -195,15 +202,14 @@ describe('User Tests', () => {
             email: 'miguel.toscano@wolox.com.ar',
             password: '12345678'
           })
-          .then(res2 => {
-            const token2 = res2.body.token;
+          .then(res => {
             chai
               .request(server)
               .get('/users')
-              .set('authorization', token2)
-              .then(res => {
+              .set('authorization', res.body.token)
+              .then(res2 => {
                 res.should.have.status(200);
-                should.equal(res.body.count, 3);
+                should.equal(res2.body.count, 3);
                 done();
               });
           });
@@ -222,7 +228,7 @@ describe('User Tests', () => {
     });
   });
   describe('/admin/users POST', () => {
-    beforeEach('An admin is created', done => {
+    beforeEach('An admin and two regular users are created', done => {
       chai
         .request(server)
         .post('/signup')
@@ -230,9 +236,106 @@ describe('User Tests', () => {
           email: 'miguel.toscano@wolox.com.ar',
           password: '12345678',
           firstName: 'Miguel',
-          lastName: 'Toscano'
+          lastName: 'Toscano',
+          role: 'admin'
         })
+        .then(() => signUpUser('martin.cirio@wolox.com.ar'))
+        .then(() => signUpUser('ricardo.fort@wolox.com.ar'))
         .then(() => done());
+    });
+    context('An admin is logged in', () => {
+      it('Converting an existing user to an admin should succeed', done => {
+        chai
+          .request(server)
+          .post('/signin')
+          .send({
+            email: 'miguel.toscano@wolox.com.ar',
+            password: '12345678'
+          })
+          .then(res => {
+            chai
+              .request(server)
+              .post('/admin/users')
+              .set('authorization', res.body.token)
+              .send({
+                token: res.body.token,
+                user: {
+                  email: 'martin.cirio@wolox.com.ar',
+                  password: '12345678'
+                }
+              })
+              .then(res2 => {
+                res2.should.have.status(200);
+                const decodedToken = tokenManager.decodeToken(res2.body.token);
+                should.equal('admin', decodedToken.role);
+                done();
+              });
+          });
+      });
+      it('Adding a new user with admin role as an admin should succeed', done => {
+        chai
+          .request(server)
+          .post('/signin')
+          .send({
+            email: 'miguel.toscano@wolox.com.ar',
+            password: '12345678'
+          })
+          .then(res => {
+            chai
+              .request(server)
+              .post('/admin/users')
+              .set('authorization', res.body.token)
+              .send({
+                token: res.body.token,
+                user: {
+                  email: 'new.user@wolox.com.ar',
+                  password: '12345678',
+                  firstName: 'new',
+                  lastName: 'user'
+                  // role: 'admin'
+                }
+              })
+              .then(res2 => {
+                res2.should.have.status(200);
+                const decodedToken = tokenManager.decodeToken(res2.body.token);
+                should.equal('admin', decodedToken.role);
+                done();
+              });
+          });
+      });
+      it('Trying to modify an user role without logging in should fail', done => {
+        chai
+          .request(server)
+          .post('/admin/users')
+          .send({
+            user: {
+              email: 'miguel.toscano@wolox.com.ar',
+              password: '12345678'
+            }
+          })
+          .catch(err => {
+            err.should.have.status(401);
+            done();
+          });
+      });
+      it('Trying to add a new admin user whithout logging in should fail', done => {
+        chai
+          .request(server)
+          .post('/admin/users')
+          .send({
+            user: {
+              email: 'rogelio.funesmori@wolox.com.ar',
+              password: '12345678',
+              firstName: 'Rogelio',
+              lastName: 'Funes Mori',
+              role: 'admin'
+            }
+          })
+          .catch(err => {
+            err.should.have.status(401);
+            done();
+          });
+      });
     });
   });
 });
