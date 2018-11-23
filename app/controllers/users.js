@@ -60,7 +60,6 @@ const addUser = (user, role) => {
 
 exports.signUp = (req, res, next) => {
   const user = req.body;
-  user.role = constants.REGULAR_ROLE;
   hasValidFields(user)
     .then(() => hasUniqueEmail(user.email))
     .then(() => encryptPassword(user.password))
@@ -114,7 +113,7 @@ exports.listUsers = (req, res, next) => {
     .catch(next);
 };
 
-const updateUserRole = (foundUser, newRole) => {
+const updateUserRole = (foundUser, newRole) =>
   foundUser
     .updateAttributes({
       role: newRole
@@ -123,7 +122,6 @@ const updateUserRole = (foundUser, newRole) => {
     .catch(err => {
       throw err;
     });
-};
 
 // Only an admin can add another admin
 exports.addAdmin = (req, res, next) => {
