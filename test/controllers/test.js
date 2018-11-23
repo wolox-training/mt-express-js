@@ -3,7 +3,8 @@ const chai = require('chai'),
   server = require('../../app'),
   should = chai.should(),
   logger = require('../../app/logger'),
-  tokenManager = require('../../app/services/tokenManager');
+  tokenManager = require('../../app/services/tokenManager'),
+  constants = require('../../app/controllers/constants');
 
 const signUpUser = email => {
   return chai
@@ -29,7 +30,7 @@ describe('User Tests', () => {
             password: '12345678',
             firstName: 'Miguel',
             lastName: 'Toscano',
-            role: 'admin'
+            role: constants.ADMIN_ROLE
           })
           .then(res => {
             res.should.have.status(200);
@@ -228,7 +229,7 @@ describe('User Tests', () => {
     });
   });
   describe('/admin/users POST', () => {
-    beforeEach('An admin and two regular users are created', done => {
+    beforeEach('3 regular users are created', done => {
       chai
         .request(server)
         .post('/signup')
@@ -236,8 +237,7 @@ describe('User Tests', () => {
           email: 'miguel.toscano@wolox.com.ar',
           password: '12345678',
           firstName: 'Miguel',
-          lastName: 'Toscano',
-          role: 'admin'
+          lastName: 'Toscano'
         })
         .then(() => signUpUser('martin.cirio@wolox.com.ar'))
         .then(() => signUpUser('ricardo.fort@wolox.com.ar'))
@@ -245,62 +245,44 @@ describe('User Tests', () => {
     });
     context('An admin is logged in', () => {
       it('Converting an existing user to an admin should succeed', done => {
+        const adminUser = {
+          role: 'admin'
+        };
+        const token = tokenManager.createToken(adminUser);
         chai
           .request(server)
-          .post('/signin')
+          .post('/admin/users')
+          .set('authorization', token)
           .send({
-            email: 'miguel.toscano@wolox.com.ar',
-            password: '12345678'
+            token,
+            user: { email: 'martin.cirio@wolox.com.ar' } // existing email
           })
-          .then(res => {
-            chai
-              .request(server)
-              .post('/admin/users')
-              .set('authorization', res.body.token)
-              .send({
-                token: res.body.token,
-                user: {
-                  email: 'martin.cirio@wolox.com.ar',
-                  password: '12345678'
-                }
-              })
-              .then(res2 => {
-                res2.should.have.status(200);
-                const decodedToken = tokenManager.decodeToken(res2.body.token);
-                should.equal('admin', decodedToken.role);
-                done();
-              });
+          .then(res2 => {
+            res2.should.have.status(200);
+            done();
           });
       });
       it('Adding a new user with admin role as an admin should succeed', done => {
+        const adminUser = {
+          role: 'admin'
+        };
+        const token = tokenManager.createToken(adminUser);
         chai
           .request(server)
-          .post('/signin')
+          .post('/admin/users')
+          .set('authorization', token)
           .send({
-            email: 'miguel.toscano@wolox.com.ar',
-            password: '12345678'
+            token,
+            user: {
+              email: 'new.user@wolox.com.ar',
+              firstName: 'new',
+              lastName: 'user',
+              password: '12345678'
+            }
           })
-          .then(res => {
-            chai
-              .request(server)
-              .post('/admin/users')
-              .set('authorization', res.body.token)
-              .send({
-                token: res.body.token,
-                user: {
-                  email: 'new.user@wolox.com.ar',
-                  password: '12345678',
-                  firstName: 'new',
-                  lastName: 'user'
-                  // role: 'admin'
-                }
-              })
-              .then(res2 => {
-                res2.should.have.status(200);
-                const decodedToken = tokenManager.decodeToken(res2.body.token);
-                should.equal('admin', decodedToken.role);
-                done();
-              });
+          .then(res2 => {
+            res2.should.have.status(200);
+            done();
           });
       });
       it('Trying to modify an user role without logging in should fail', done => {

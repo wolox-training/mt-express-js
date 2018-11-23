@@ -5,14 +5,8 @@ const userServices = require('../services/users');
 const logger = require('../logger');
 const jwt = require('jwt-simple');
 const tokenManager = require('../services/tokenManager');
-
-const SALT = 10; // to ensure security
-const MIN_PASSWORD_LENGTH = 8;
-const LIMIT_DEFAULT = 50;
-const PAGE_DEFAULT = 1;
-
-const ADMIN_ROLE = 'admin';
-const REGULAR_ROLE = 'regular';
+const auth = require('../middlewares/auth');
+const constants = require('./constants');
 
 // Regex for Email domain validation
 const ARGENTINA_WOLOX_DOMAIN = new RegExp('@wolox.com.ar');
@@ -24,7 +18,7 @@ const hasNoEmptyFields = user => user.email && user.password && user.firstName &
 const hasValidDomain = email =>
   ARGENTINA_WOLOX_DOMAIN.test(email) || COLOMBIA_WOLOX_DOMAIN.test(email) || CHILE_WOLOX_DOMAIN.test(email);
 
-const hasValidPassword = password => password.length >= MIN_PASSWORD_LENGTH;
+const hasValidPassword = password => password.length >= constants.MIN_PASSWORD_LENGTH;
 
 const hasValidFields = user =>
   new Promise((resolve, reject) => {
@@ -54,14 +48,14 @@ const hasUniqueEmail = email =>
   );
 
 const encryptPassword = password =>
-  bcrypt.hash(password, SALT).catch(err => {
+  bcrypt.hash(password, constants.SALT).catch(err => {
     logger.error(err);
     throw errors.defaultError(err);
   });
 
 exports.signUp = (req, res, next) => {
   const user = req.body;
-  user.role = req.body.role || REGULAR_ROLE;
+  user.role = constants.REGULAR_ROLE;
   hasValidFields(user)
     .then(() => hasUniqueEmail(user.email))
     .then(() => encryptPassword(user.password))
@@ -102,8 +96,8 @@ exports.signIn = (req, res, next) => {
 
 exports.listUsers = (req, res, next) => {
   const authenticationHeader = req.headers.authorization;
-  const limit = req.query.limit || LIMIT_DEFAULT;
-  const page = req.query.page || PAGE_DEFAULT;
+  const limit = req.query.limit || constants.LIMIT_DEFAULT;
+  const page = req.query.page || constants.PAGE_DEFAULT;
 
   if (!authenticationHeader) return next(errors.authenticationFailure());
 
@@ -115,44 +109,41 @@ exports.listUsers = (req, res, next) => {
     .catch(next);
 };
 
-const validatePermission = token =>
+const updateUserRole = (foundUser, user) =>
   new Promise((resolve, reject) => {
-    if (!token) reject(errors.noAccessPermission());
-    const decodedToken = tokenManager.decodeToken(token);
-    if (decodedToken.role !== ADMIN_ROLE) reject(errors.noAccessPermission());
-    resolve(token);
+    if (foundUser) {
+      foundUser.updateAttributes({
+        role: constants.ADMIN_ROLE
+      });
+      resolve();
+    } else {
+      hasValidFields(user)
+        .then(() => hasUniqueEmail(user.email))
+        .then(() => encryptPassword(user.password))
+        .then(hash => {
+          user.password = hash;
+          user.role = constants.ADMIN_ROLE;
+          users.addUser(user);
+        })
+        .then(() => resolve())
+        .catch(err => {
+          throw err;
+        });
+    }
   });
 
 // Only an admin can add another admin
 exports.addAdmin = (req, res, next) => {
   const user = req.body.user;
 
-  validatePermission(req.body.token)
+  auth
+    .validatePermission(req.body.token)
     .then(() => users.findUserByEmail(user.email))
-    .then(foundUser => {
-      if (foundUser) {
-        bcrypt.compare(user.password, foundUser.password, (err, result) => {
-          if (err) throw errors.invalidCredentials();
-        });
-        foundUser.updateAttributes({
-          role: ADMIN_ROLE
-        });
-        const token = tokenManager.createToken(foundUser);
-        res.status(200).send({ token });
-      } else {
-        hasValidFields(user)
-          .then(() => hasUniqueEmail(user.email))
-          .then(() => encryptPassword(user.password))
-          .then(hash => {
-            user.password = hash;
-            user.role = ADMIN_ROLE;
-            users.addUser(user);
-          })
-          .then(() => {
-            const token = tokenManager.createToken(user);
-            res.status(200).send({ token });
-          });
-      }
-    })
+    .then(foundUser => updateUserRole(foundUser, user))
+    .then(() =>
+      res.status(200).send({
+        message: 'Admin added'
+      })
+    )
     .catch(next);
 };
