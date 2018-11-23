@@ -4,7 +4,7 @@ const chai = require('chai'),
   should = chai.should(),
   logger = require('../../app/logger'),
   tokenManager = require('../../app/services/tokenManager'),
-  constants = require('../../app/controllers/constants');
+  constants = require('../../app/constants');
 
 const signUpUser = email => {
   return chai
@@ -244,8 +244,10 @@ describe('User Tests', () => {
         .then(() => done());
     });
     context('An admin is logged in', () => {
-      it('Converting an existing user to an admin should succeed', done => {
+      it('Converting an existing user to an admin should should succeed', done => {
         const adminUser = {
+          email: 'miguel.toscano@wolox.com.ar',
+          password: '12345678',
           role: 'admin'
         };
         const token = tokenManager.createToken(adminUser);
@@ -264,7 +266,9 @@ describe('User Tests', () => {
       });
       it('Adding a new user with admin role as an admin should succeed', done => {
         const adminUser = {
-          role: 'admin'
+          role: 'admin',
+          email: 'miguel.toscano@wolox.com.ar',
+          password: '12345678'
         };
         const token = tokenManager.createToken(adminUser);
         chai

@@ -5,8 +5,8 @@ const userServices = require('../services/users');
 const logger = require('../logger');
 const jwt = require('jwt-simple');
 const tokenManager = require('../services/tokenManager');
-const auth = require('../middlewares/auth');
-const constants = require('./constants');
+const authentication = require('../middlewares/authentication');
+const constants = require('../constants');
 
 // Regex for Email domain validation
 const ARGENTINA_WOLOX_DOMAIN = new RegExp('@wolox.com.ar');
@@ -53,6 +53,11 @@ const encryptPassword = password =>
     throw errors.defaultError(err);
   });
 
+const addUser = (user, role) => {
+  user.role = role;
+  return Promise.resolve(users.addUser(user));
+};
+
 exports.signUp = (req, res, next) => {
   const user = req.body;
   user.role = constants.REGULAR_ROLE;
@@ -61,7 +66,7 @@ exports.signUp = (req, res, next) => {
     .then(() => encryptPassword(user.password))
     .then(hash => {
       user.password = hash;
-      return users.addUser(user);
+      return addUser(user, constants.REGULAR_ROLE);
     })
     .then(() =>
       res.status(200).send({
@@ -109,37 +114,29 @@ exports.listUsers = (req, res, next) => {
     .catch(next);
 };
 
-const updateUserRole = (foundUser, user) =>
-  new Promise((resolve, reject) => {
-    if (foundUser) {
-      foundUser.updateAttributes({
-        role: constants.ADMIN_ROLE
-      });
-      resolve();
-    } else {
-      hasValidFields(user)
-        .then(() => hasUniqueEmail(user.email))
-        .then(() => encryptPassword(user.password))
-        .then(hash => {
-          user.password = hash;
-          user.role = constants.ADMIN_ROLE;
-          users.addUser(user);
-        })
-        .then(() => resolve())
-        .catch(err => {
-          throw err;
-        });
-    }
-  });
+const updateUserRole = (foundUser, newRole) => {
+  foundUser
+    .updateAttributes({
+      role: newRole
+    })
+    .then(() => Promise.resolve())
+    .catch(err => {
+      throw err;
+    });
+};
 
 // Only an admin can add another admin
 exports.addAdmin = (req, res, next) => {
   const user = req.body.user;
 
-  auth
-    .validatePermission(req.body.token)
-    .then(() => users.findUserByEmail(user.email))
-    .then(foundUser => updateUserRole(foundUser, user))
+  users
+    .findUserByEmail(user.email)
+    .then(foundUser => {
+      if (foundUser) updateUserRole(foundUser, constants.ADMIN_ROLE);
+      else {
+        addUser(user, constants.ADMIN_ROLE);
+      }
+    })
     .then(() =>
       res.status(200).send({
         message: 'Admin added'
