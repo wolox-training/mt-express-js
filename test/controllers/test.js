@@ -320,4 +320,45 @@ describe('User Tests', () => {
       });
     });
   });
+  describe('/albums GET', () => {
+    it('Trying to list albums without beeing logged in should fail', done => {
+      chai
+        .request(server)
+        .get('/albums')
+        .catch(err => {
+          err.should.have.status(401);
+          done();
+        });
+    });
+    it('Listing albums while beeing logged in should succeed', done => {
+      chai
+        .request(server)
+        .post('/signup')
+        .send({
+          email: 'miguel.toscano@wolox.com.ar',
+          password: '12345678',
+          firstName: 'Miguel',
+          lastName: 'Toscano'
+        })
+        .then(() => {
+          chai
+            .request(server)
+            .post('/signin')
+            .send({
+              email: 'miguel.toscano@wolox.com.ar',
+              password: '12345678'
+            })
+            .then(res => {
+              chai
+                .request(server)
+                .get('/albums')
+                .set('authorization', res.body.token)
+                .then(res1 => {
+                  res1.should.have.status(200);
+                  done();
+                });
+            });
+        });
+    });
+  });
 });

@@ -7,6 +7,7 @@ const jwt = require('jwt-simple');
 const tokenManager = require('../services/tokenManager');
 const auth = require('../middlewares/auth');
 const constants = require('./constants');
+const fetch = require('node-fetch');
 
 // Regex for Email domain validation
 const ARGENTINA_WOLOX_DOMAIN = new RegExp('@wolox.com.ar');
@@ -145,5 +146,17 @@ exports.addAdmin = (req, res, next) => {
         message: 'Admin added'
       })
     )
+    .catch(next);
+};
+
+exports.listAlbums = (req, res, next) => {
+  const authenticationHeader = req.headers.authorization;
+
+  if (!authenticationHeader) return next(errors.authenticationFailure());
+
+  fetch('https://jsonplaceholder.typicode.com/albums')
+    .then(json => {
+      res.status(200).send(json);
+    })
     .catch(next);
 };
