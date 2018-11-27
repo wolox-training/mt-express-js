@@ -41,9 +41,9 @@ const hasUniqueEmail = email =>
   users.findUserByEmail(email).then(
     foundUser =>
       new Promise((resolve, reject) => {
-        if (!foundUser) resolve();
+        if (!foundUser) return resolve();
         logger.error(errors.EMAIL_ALREADY_USED);
-        reject(errors.emailAlreadyUsed());
+        return reject(errors.emailAlreadyUsed());
       })
   );
 
@@ -55,18 +55,19 @@ const encryptPassword = password =>
 
 const addUser = (user, role) => {
   user.role = role;
-  return Promise.resolve(users.addUser(user));
-};
-
-exports.signUp = (req, res, next) => {
-  const user = req.body;
-  hasValidFields(user)
+  return hasValidFields(user)
     .then(() => hasUniqueEmail(user.email))
     .then(() => encryptPassword(user.password))
     .then(hash => {
       user.password = hash;
-      return addUser(user, constants.REGULAR_ROLE);
-    })
+      return users.addUser(user);
+    });
+};
+
+exports.signUp = (req, res, next) => {
+  const user = req.body;
+
+  addUser(user, constants.REGULAR_ROLE)
     .then(() =>
       res.status(200).send({
         message: 'User created'
@@ -76,7 +77,7 @@ exports.signUp = (req, res, next) => {
 };
 
 exports.signIn = (req, res, next) => {
-  let user = req.body;
+  const user = req.body;
 
   if (!hasValidDomain(user.email)) return next(errors.invalidEmailDomain());
 
@@ -84,8 +85,8 @@ exports.signIn = (req, res, next) => {
     .findUserByEmail(user.email)
     .then(foundUser => {
       const tempPassword = user.password;
-      user = foundUser;
       if (foundUser) {
+        user.role = foundUser.role;
         return bcrypt.compare(tempPassword, foundUser.password);
       }
       return next(errors.invalidCredentials());
@@ -125,20 +126,18 @@ const updateUserRole = (foundUser, newRole) =>
 
 // Only an admin can add another admin
 exports.addAdmin = (req, res, next) => {
-  const user = req.body.user;
+  const user = req.body;
 
   users
     .findUserByEmail(user.email)
     .then(foundUser => {
-      if (foundUser) updateUserRole(foundUser, constants.ADMIN_ROLE);
-      else {
-        addUser(user, constants.ADMIN_ROLE);
-      }
+      if (foundUser) return updateUserRole(foundUser, constants.ADMIN_ROLE);
+      return addUser(user, constants.ADMIN_ROLE);
     })
-    .then(() =>
+    .then(() => {
       res.status(200).send({
         message: 'Admin added'
-      })
-    )
+      });
+    })
     .catch(next);
 };
