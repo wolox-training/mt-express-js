@@ -114,16 +114,6 @@ exports.listUsers = (req, res, next) => {
     .catch(next);
 };
 
-const updateUserRole = (foundUser, newRole) =>
-  foundUser
-    .updateAttributes({
-      role: newRole
-    })
-    .then(() => Promise.resolve())
-    .catch(err => {
-      throw err;
-    });
-
 // Only an admin can add another admin
 exports.addAdmin = (req, res, next) => {
   const user = req.body;
@@ -131,7 +121,7 @@ exports.addAdmin = (req, res, next) => {
   users
     .findUserByEmail(user.email)
     .then(foundUser => {
-      if (foundUser) return updateUserRole(foundUser, constants.ADMIN_ROLE);
+      if (foundUser) return users.updateUserRole(foundUser, constants.ADMIN_ROLE);
       return addUser(user, constants.ADMIN_ROLE);
     })
     .then(() => {
