@@ -34,6 +34,11 @@ module.exports = (sequelize, DataTypes) => {
       password: {
         type: DataTypes.STRING,
         allowNull: false
+      },
+
+      role: {
+        type: DataTypes.STRING,
+        allowNull: false
       }
     },
 
@@ -62,9 +67,18 @@ module.exports = (sequelize, DataTypes) => {
       throw errors.databaseError(err.detail);
     });
 
+  Users.updateUserRole = (user, newRole) =>
+    user
+      .updateAttributes({
+        role: newRole
+      })
+      .catch(err => {
+        throw err;
+      });
+
   Users.getAllUsers = (page, limit) =>
     Users.findAndCountAll({
-      attributes: ['firstName', 'lastName', 'email'],
+      attributes: ['firstName', 'lastName', 'email', 'role'],
       limit,
       offset: (page - 1) * limit
     }).catch(err => {

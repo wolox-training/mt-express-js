@@ -4,13 +4,9 @@ const errors = require('../errors');
 const userServices = require('../services/users');
 const logger = require('../logger');
 const jwt = require('jwt-simple');
-
-const SALT = 10; // to ensure security
-const MIN_PASSWORD_LENGTH = 8;
-const LIMIT_DEFAULT = 50;
-const PAGE_DEFAULT = 1;
-
-const KEY = 'secret';
+const tokenManager = require('../services/tokenManager');
+const authentication = require('../middlewares/authentication');
+const constants = require('../constants');
 
 // Regex for Email domain validation
 const ARGENTINA_WOLOX_DOMAIN = new RegExp('@wolox.com.ar');
@@ -22,7 +18,7 @@ const hasNoEmptyFields = user => user.email && user.password && user.firstName &
 const hasValidDomain = email =>
   ARGENTINA_WOLOX_DOMAIN.test(email) || COLOMBIA_WOLOX_DOMAIN.test(email) || CHILE_WOLOX_DOMAIN.test(email);
 
-const hasValidPassword = password => password.length >= MIN_PASSWORD_LENGTH;
+const hasValidPassword = password => password.length >= constants.MIN_PASSWORD_LENGTH;
 
 const hasValidFields = user =>
   new Promise((resolve, reject) => {
@@ -45,28 +41,33 @@ const hasUniqueEmail = email =>
   users.findUserByEmail(email).then(
     foundUser =>
       new Promise((resolve, reject) => {
-        if (!foundUser) resolve();
+        if (!foundUser) return resolve();
         logger.error(errors.EMAIL_ALREADY_USED);
-        reject(errors.emailAlreadyUsed());
+        return reject(errors.emailAlreadyUsed());
       })
   );
 
 const encryptPassword = password =>
-  bcrypt.hash(password, SALT).catch(err => {
+  bcrypt.hash(password, constants.SALT).catch(err => {
     logger.error(err);
     throw errors.defaultError(err);
   });
 
-exports.signUp = (req, res, next) => {
-  const user = req.body;
-
-  hasValidFields(user)
+const addUser = (user, role) => {
+  user.role = role;
+  return hasValidFields(user)
     .then(() => hasUniqueEmail(user.email))
     .then(() => encryptPassword(user.password))
     .then(hash => {
       user.password = hash;
       return users.addUser(user);
-    })
+    });
+};
+
+exports.signUp = (req, res, next) => {
+  const user = req.body;
+
+  addUser(user, constants.REGULAR_ROLE)
     .then(() =>
       res.status(200).send({
         message: 'User created'
@@ -83,12 +84,16 @@ exports.signIn = (req, res, next) => {
   users
     .findUserByEmail(user.email)
     .then(foundUser => {
-      if (foundUser) return bcrypt.compare(user.password, foundUser.password);
+      const tempPassword = user.password;
+      if (foundUser) {
+        user.role = foundUser.role;
+        return bcrypt.compare(tempPassword, foundUser.password);
+      }
       return next(errors.invalidCredentials());
     })
     .then(valid => {
       if (!valid) return next(errors.invalidCredentials());
-      const token = jwt.encode({ user: user.email }, KEY);
+      const token = tokenManager.createToken(user);
       res.status(200).send({ token });
     })
     .catch(next);
@@ -96,8 +101,8 @@ exports.signIn = (req, res, next) => {
 
 exports.listUsers = (req, res, next) => {
   const authenticationHeader = req.headers.authorization;
-  const limit = req.query.limit || LIMIT_DEFAULT;
-  const page = req.query.page || PAGE_DEFAULT;
+  const limit = req.query.limit || constants.LIMIT_DEFAULT;
+  const page = req.query.page || constants.PAGE_DEFAULT;
 
   if (!authenticationHeader) return next(errors.authenticationFailure());
 
@@ -105,6 +110,24 @@ exports.listUsers = (req, res, next) => {
     .getAllUsers(page, limit)
     .then(allUsers => {
       res.status(200).send(allUsers);
+    })
+    .catch(next);
+};
+
+// Only an admin can add another admin
+exports.addAdmin = (req, res, next) => {
+  const user = req.body;
+
+  users
+    .findUserByEmail(user.email)
+    .then(foundUser => {
+      if (foundUser) return users.updateUserRole(foundUser, constants.ADMIN_ROLE);
+      return addUser(user, constants.ADMIN_ROLE);
+    })
+    .then(() => {
+      res.status(200).send({
+        message: 'Admin added'
+      });
     })
     .catch(next);
 };
