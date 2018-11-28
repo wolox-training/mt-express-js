@@ -6,4 +6,5 @@ exports.init = app => {
   app.post('/signin', [], users.signIn);
   app.get('/users', [], users.listUsers);
   app.post('/admin/users', [authentication.validatePermission], users.addAdmin);
+  app.get('/albums', [], users.listAlbums);
 };
