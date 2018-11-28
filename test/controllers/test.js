@@ -4,7 +4,8 @@ const chai = require('chai'),
   constants = require('../../app/constants'),
   users = require('../../app/models').users,
   bcrypt = require('bcryptjs'),
-  tokenManager = require('../../app/services/tokenManager');
+  tokenManager = require('../../app/services/tokenManager'),
+  nock = require('nock');
 
 const signUpUser = (email, password = '12345678') => {
   return chai
@@ -358,6 +359,63 @@ describe('User Tests', () => {
           .send({
             email: 'pajaro@wolox.com.ar'
           })
+          .catch(err => {
+            err.should.have.status(401);
+            done();
+          });
+      });
+    });
+  });
+  describe('/albums', () => {
+    let token = null;
+
+    beforeEach('A user is created and logged in', done => {
+      signUpUser('rata@wolox.com.ar', '12345678')
+        .then(res1 => signIn('rata@wolox.com.ar', '12345678'))
+        .then(res2 => {
+          token = res2.body.token;
+          done();
+        });
+    });
+
+    context('A user is logged in', () => {
+      // This is the response https://jsonplaceholder.typicode.com/albums should give everytime someone makes a GET request
+      const expectedResponse = {
+        userId: 1,
+        id: 1,
+        title: 'quidem molestiae enim'
+      };
+
+      // Everytime a module makes a http request to the specified url, it will be intercepted and its response
+      // will be the following
+      const jsonplaceholder = nock('https://jsonplaceholder.typicode.com')
+        .get('/albums')
+        .reply(200, {
+          userId: 1,
+          id: 1,
+          title: 'quidem molestiae enim'
+        });
+
+      it('A logged in user should list albums succesfully', done => {
+        chai
+          .request(server)
+          .get('/albums')
+          .set('authorization', token)
+          .then(res3 => {
+            res3.should.have.status(200);
+            res3.body.id.should.equal(expectedResponse.id);
+            res3.body.userId.should.equal(expectedResponse.userId);
+            res3.body.title.should.equal(expectedResponse.title);
+            done();
+          });
+      });
+    });
+
+    context('A user is not logged in', () => {
+      it('A non logged in user trying to list albums should fail', done => {
+        chai
+          .request(server)
+          .get('/albums')
           .catch(err => {
             err.should.have.status(401);
             done();
