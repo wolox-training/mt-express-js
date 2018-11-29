@@ -12,4 +12,5 @@ exports.mockAlbumsGetRequest = () => {
   const jsonplaceholder = nock('https://jsonplaceholder.typicode.com')
     .get('/albums')
     .reply(200, exports.expectedAlbumsResponse);
+  return Promise.resolve();
 };
