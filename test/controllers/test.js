@@ -390,11 +390,7 @@ describe('User Tests', () => {
       // will be the following
       const jsonplaceholder = nock('https://jsonplaceholder.typicode.com')
         .get('/albums')
-        .reply(200, {
-          userId: 1,
-          id: 1,
-          title: 'quidem molestiae enim'
-        });
+        .reply(200, expectedResponse);
 
       it('A logged in user should list albums succesfully', done => {
         chai

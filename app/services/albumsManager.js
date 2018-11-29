@@ -8,9 +8,4 @@ const allAlbumsoptions = {
 };
 
 exports.getAllAlbums = () =>
-  new Promise((resolve, reject) => {
-    request(allAlbumsoptions, (error, response, body) => {
-      if (error) reject(errors.dependencyFailure());
-      resolve(body);
-    });
-  });
+  request(allAlbumsoptions).catch(err => Promise.reject(errors.dependencyFailure()));
