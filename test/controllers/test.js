@@ -369,7 +369,7 @@ describe('User Tests', () => {
     let token = null;
 
     beforeEach('A user is created and logged in', done => {
-      support.mockGetAlbumsRequest();
+      support.mockAlbumsGetRequest();
 
       signUpUser('rata@wolox.com.ar', '12345678')
         .then(res1 => signIn('rata@wolox.com.ar', '12345678'))
