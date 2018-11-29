@@ -4,8 +4,7 @@ const chai = require('chai'),
   constants = require('../../app/constants'),
   users = require('../../app/models').users,
   bcrypt = require('bcryptjs'),
-  tokenManager = require('../../app/services/tokenManager'),
-  nock = require('nock');
+  support = require('../support');
 
 const signUpUser = (email, password = '12345678') => {
   return chai
@@ -370,6 +369,8 @@ describe('User Tests', () => {
     let token = null;
 
     beforeEach('A user is created and logged in', done => {
+      support.mockGetAlbumsRequest();
+
       signUpUser('rata@wolox.com.ar', '12345678')
         .then(res1 => signIn('rata@wolox.com.ar', '12345678'))
         .then(res2 => {
@@ -379,19 +380,6 @@ describe('User Tests', () => {
     });
 
     context('A user is logged in', () => {
-      // This is the response https://jsonplaceholder.typicode.com/albums should give everytime someone makes a GET request
-      const expectedResponse = {
-        userId: 1,
-        id: 1,
-        title: 'quidem molestiae enim'
-      };
-
-      // Everytime a module makes a http request to the specified url, it will be intercepted and its response
-      // will be the following
-      const jsonplaceholder = nock('https://jsonplaceholder.typicode.com')
-        .get('/albums')
-        .reply(200, expectedResponse);
-
       it('A logged in user should list albums succesfully', done => {
         chai
           .request(server)
@@ -399,9 +387,9 @@ describe('User Tests', () => {
           .set('authorization', token)
           .then(res3 => {
             res3.should.have.status(200);
-            res3.body.id.should.equal(expectedResponse.id);
-            res3.body.userId.should.equal(expectedResponse.userId);
-            res3.body.title.should.equal(expectedResponse.title);
+            res3.body.id.should.equal(support.expectedAlbumsResponse.id);
+            res3.body.userId.should.equal(support.expectedAlbumsResponse.userId);
+            res3.body.title.should.equal(support.expectedAlbumsResponse.title);
             done();
           });
       });
