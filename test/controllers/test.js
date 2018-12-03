@@ -4,7 +4,7 @@ const chai = require('chai'),
   constants = require('../../app/constants'),
   users = require('../../app/models').users,
   bcrypt = require('bcryptjs'),
-  support = require('../support');
+  support = require('../support/mocks');
 
 const signUpUser = (email, password = '12345678') => {
   return chai
@@ -365,16 +365,15 @@ describe('User Tests', () => {
       });
     });
   });
-  describe('/albums', () => {
+  describe.only('/albums', () => {
     let token = null;
 
     beforeEach('A user is created and logged in', done => {
-      support
-        .mockAlbumsGetRequest()
-        .then(() => signUpUser('rata@wolox.com.ar', '12345678'))
+      signUpUser('rata@wolox.com.ar', '12345678')
         .then(res1 => signIn('rata@wolox.com.ar', '12345678'))
         .then(res2 => {
           token = res2.body.token;
+          support.mockAlbumsGetRequest();
           done();
         });
     });

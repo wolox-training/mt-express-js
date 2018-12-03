@@ -1,5 +1,6 @@
 const request = require('request');
 const errors = require('../errors');
+const requestPromise = require('request-promise');
 
 const allAlbumsoptions = {
   url: 'https://jsonplaceholder.typicode.com/albums',
@@ -8,9 +9,6 @@ const allAlbumsoptions = {
 };
 
 exports.getAllAlbums = () =>
-  new Promise((resolve, reject) => {
-    request(allAlbumsoptions, (error, response, body) => {
-      if (error) reject(errors.dependencyFailure());
-      resolve(body);
-    });
+  requestPromise(allAlbumsoptions).catch(err => {
+    throw errors.defaultError(err);
   });

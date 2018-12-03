@@ -52,7 +52,7 @@
     "winston": "^2.4.0",
     "winston-daily-rotate-file": "^1.7.2",
     "moment": "^2.22.2",
-    "request-promise": "4.2.2"
+    "request-promise": "^4.2.2"
   },
   "devDependencies": {
     "babel": "6.23.0",
