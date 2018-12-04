@@ -408,7 +408,7 @@ describe('User Tests', () => {
     });
   });
 
-  describe('/users/:user_id/albums GET', () => {
+  describe.only('/users/:user_id/albums GET', () => {
     let regularUserToken = null;
 
     beforeEach('A regular user is created and logged in', done => {

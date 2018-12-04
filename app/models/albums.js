@@ -38,12 +38,13 @@ module.exports = (sequelize, DataTypes) => {
     // associations can be defined here
   };
 
-  Albums.findAlbumsByOwnerId = ownerId =>
-    Albums.findAll({ where: { ownerId } }).catch(err => {
+  Albums.findAlbumsByOwnerId = ownerId => {
+    console.log(ownerId);
+    return Albums.findAll({ where: { ownerId } }).catch(err => {
       logger.error(err.detail);
       throw errors.databaseError(err.detail);
     });
-
+  };
   Albums.addAlbum = album =>
     Albums.create(album).catch(err => {
       logger.error(err.detail);
