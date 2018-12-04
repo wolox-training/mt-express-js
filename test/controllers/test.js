@@ -4,7 +4,8 @@ const chai = require('chai'),
   constants = require('../../app/constants'),
   users = require('../../app/models').users,
   bcrypt = require('bcryptjs'),
-  support = require('../support/mocks');
+  support = require('../support/mocks'),
+  tokenManager = require('../../app/services/tokenManager');
 
 const signUpUser = (email, password = '12345678') => {
   return chai
@@ -399,6 +400,87 @@ describe('User Tests', () => {
         chai
           .request(server)
           .get('/albums')
+          .catch(err => {
+            err.should.have.status(401);
+            done();
+          });
+      });
+    });
+  });
+
+  describe('/users/:user_id/albums GET', () => {
+    let regularUserToken = null;
+    let adminUserToken = null;
+
+    beforeEach('A regular user is created and logged in', done => {
+      forceSignUpAsAdmin('orangutan@wolox.com.ar', '12345678')
+        .then(() => signIn('orangutan@wolox.com.ar', '12345678'))
+        .then(res1 => {
+          adminUserToken = res1.body.token;
+        })
+        .then(() => signUpUser('koala@wolox.com.ar', '12345678'))
+        .then(() => signIn('koala@wolox.com.ar', '12345678'))
+        .then(res2 => {
+          regularUserToken = res2.body.token;
+          done();
+        });
+    });
+
+    context('A regular user is logged in', () => {
+      it('A regular user lists its own albums', done => {
+        const decodedToken = tokenManager.decodeToken(regularUserToken);
+
+        chai
+          .request(server)
+          .get(`/users/${decodedToken.id}/albums`)
+          .set('authorization', regularUserToken)
+          .then(res => {
+            res.should.have.status(200);
+            done();
+          });
+      });
+      it('A regular user should not be able to list other users albums', done => {
+        chai
+          .request(server)
+          .get('/users/2/albums')
+          .set('authorization', regularUserToken)
+          .catch(err => {
+            err.should.have.status(401);
+          });
+        done();
+      });
+    });
+
+    context('An admin user is logged in', () => {
+      it('An admin lists his own albums', done => {
+        const decodedToken = tokenManager.decodeToken(adminUserToken);
+
+        chai
+          .request(server)
+          .get(`/users/${decodedToken.id}/albums`)
+          .set('authorization', adminUserToken)
+          .then(res => {
+            res.should.have.status(200);
+            done();
+          });
+      });
+      it('An admin lists other users albums', done => {
+        chai
+          .request(server)
+          .get(`/users/5/albums`)
+          .set('authorization', regularUserToken)
+          .then(res => {
+            res.should.have.status(200);
+            done();
+          });
+      });
+    });
+
+    context('No user is logged in', () => {
+      it('A non-logged in user cant list any albums', done => {
+        chai
+          .request(server)
+          .get('/users/2/albums')
           .catch(err => {
             err.should.have.status(401);
             done();
