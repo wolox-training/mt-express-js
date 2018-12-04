@@ -98,11 +98,8 @@ exports.signIn = (req, res, next) => {
 };
 
 exports.listUsers = (req, res, next) => {
-  const authenticationHeader = req.headers.authorization;
   const limit = req.query.limit || constants.LIMIT_DEFAULT;
   const page = req.query.page || constants.PAGE_DEFAULT;
-
-  if (!authenticationHeader) return next(errors.authenticationFailure());
 
   users
     .getAllUsers(page, limit)
@@ -131,10 +128,6 @@ exports.addAdmin = (req, res, next) => {
 };
 
 exports.listAlbums = (req, res, next) => {
-  const authorization = req.headers.authorization;
-
-  if (!authorization) return next(errors.authenticationFailure());
-
   albumsManager
     .getAllAlbums()
     .then(allAlbums => res.status(200).send(allAlbums))

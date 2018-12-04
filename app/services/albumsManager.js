@@ -1,4 +1,3 @@
-const request = require('request');
 const errors = require('../errors');
 const requestPromise = require('request-promise');
 

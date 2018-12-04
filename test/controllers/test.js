@@ -365,7 +365,7 @@ describe('User Tests', () => {
       });
     });
   });
-  describe.only('/albums', () => {
+  describe('/albums GET', () => {
     let token = null;
 
     beforeEach('A user is created and logged in', done => {
