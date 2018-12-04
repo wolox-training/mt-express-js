@@ -4,7 +4,8 @@ const chai = require('chai'),
   constants = require('../../app/constants'),
   users = require('../../app/models').users,
   bcrypt = require('bcryptjs'),
-  support = require('../support/mocks');
+  support = require('../support/mocks'),
+  tokenManager = require('../../app/services/tokenManager');
 
 const signUpUser = (email, password = '12345678') => {
   return chai
@@ -404,6 +405,32 @@ describe('User Tests', () => {
             done();
           });
       });
+    });
+  });
+
+  describe('/users/:user_id/albums GET', () => {
+    let regularUserToken = null;
+
+    beforeEach('A regular user is created and logged in', done => {
+      signUpUser('koala@wolox.com.ar', '12345678')
+        .then(() => signIn('koala@wolox.com.ar', '12345678'))
+        .then(res => {
+          regularUserToken = res.body.token;
+          done();
+        });
+    });
+
+    it('A regular user lists its own albums', done => {
+      const decodedToken = tokenManager.decodeToken(regularUserToken);
+
+      chai
+        .request(server)
+        .get(`/users/${decodedToken.id}/albums`)
+        .set('authorization', regularUserToken)
+        .then(res => {
+          res.should.have.status(200);
+          done();
+        });
     });
   });
 });

@@ -133,3 +133,7 @@ exports.listAlbums = (req, res, next) => {
     .then(allAlbums => res.status(200).send(allAlbums))
     .catch(next);
 };
+
+exports.listUserAlbums = (req, res, next) => {
+  albumsManager.getAllAlbumsbyOwnerId(req.params.user_id).catch(next);
+};
