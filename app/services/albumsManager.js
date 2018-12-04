@@ -13,7 +13,4 @@ exports.getAllAlbums = () =>
     throw errors.defaultError(err);
   });
 
-exports.getAllAlbumsbyOwnerId = ownerId =>
-  albums.findAlbumsByOwnerId(ownerId).catch(err => {
-    throw errors.defaultError(err);
-  });
+exports.getAllAlbumsbyOwnerId = ownerId => albums.findAlbumsByOwnerId(ownerId);
