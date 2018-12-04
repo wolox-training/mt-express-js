@@ -14,4 +14,3 @@ exports.getAllAlbums = () =>
   });
 
 exports.getAllAlbumsbyOwnerId = ownerId => albums.findAlbumsByOwnerId(ownerId);
-
