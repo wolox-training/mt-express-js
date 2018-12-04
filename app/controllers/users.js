@@ -1,12 +1,10 @@
 const users = require('../models').users;
 const bcrypt = require('bcryptjs');
 const errors = require('../errors');
-const userServices = require('../services/users');
 const logger = require('../logger');
-const jwt = require('jwt-simple');
 const tokenManager = require('../services/tokenManager');
-const authentication = require('../middlewares/authentication');
 const constants = require('../constants');
+const albumsManager = require('../services/albumsManager');
 
 // Regex for Email domain validation
 const ARGENTINA_WOLOX_DOMAIN = new RegExp('@wolox.com.ar');
@@ -100,11 +98,8 @@ exports.signIn = (req, res, next) => {
 };
 
 exports.listUsers = (req, res, next) => {
-  const authenticationHeader = req.headers.authorization;
   const limit = req.query.limit || constants.LIMIT_DEFAULT;
   const page = req.query.page || constants.PAGE_DEFAULT;
-
-  if (!authenticationHeader) return next(errors.authenticationFailure());
 
   users
     .getAllUsers(page, limit)
@@ -129,5 +124,12 @@ exports.addAdmin = (req, res, next) => {
         message: 'Admin added'
       });
     })
+    .catch(next);
+};
+
+exports.listAlbums = (req, res, next) => {
+  albumsManager
+    .getAllAlbums()
+    .then(allAlbums => res.status(200).send(allAlbums))
     .catch(next);
 };

@@ -4,7 +4,7 @@ const chai = require('chai'),
   constants = require('../../app/constants'),
   users = require('../../app/models').users,
   bcrypt = require('bcryptjs'),
-  tokenManager = require('../../app/services/tokenManager');
+  support = require('../support/mocks');
 
 const signUpUser = (email, password = '12345678') => {
   return chai
@@ -358,6 +358,47 @@ describe('User Tests', () => {
           .send({
             email: 'pajaro@wolox.com.ar'
           })
+          .catch(err => {
+            err.should.have.status(401);
+            done();
+          });
+      });
+    });
+  });
+  describe('/albums GET', () => {
+    let token = null;
+
+    beforeEach('A user is created and logged in', done => {
+      signUpUser('rata@wolox.com.ar', '12345678')
+        .then(res1 => signIn('rata@wolox.com.ar', '12345678'))
+        .then(res2 => {
+          token = res2.body.token;
+          support.mockAlbumsGetRequest();
+          done();
+        });
+    });
+
+    context('A user is logged in', () => {
+      it('A logged in user should list albums succesfully', done => {
+        chai
+          .request(server)
+          .get('/albums')
+          .set('authorization', token)
+          .then(res3 => {
+            res3.should.have.status(200);
+            res3.body.id.should.equal(support.expectedAlbumsResponse.id);
+            res3.body.userId.should.equal(support.expectedAlbumsResponse.userId);
+            res3.body.title.should.equal(support.expectedAlbumsResponse.title);
+            done();
+          });
+      });
+    });
+
+    context('A user is not logged in', () => {
+      it('A non logged in user trying to list albums should fail', done => {
+        chai
+          .request(server)
+          .get('/albums')
           .catch(err => {
             err.should.have.status(401);
             done();
