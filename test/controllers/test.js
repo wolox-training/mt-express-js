@@ -5,7 +5,9 @@ const chai = require('chai'),
   users = require('../../app/models').users,
   bcrypt = require('bcryptjs'),
   support = require('../support/mocks'),
-  tokenManager = require('../../app/services/tokenManager');
+  tokenManager = require('../../app/services/tokenManager'),
+  support = require('../support/mocks');
+
 
 const signUpUser = (email, password = '12345678') => {
   return chai
@@ -488,4 +490,5 @@ describe('User Tests', () => {
       });
     });
   });
+
 });

@@ -7,6 +7,7 @@ exports.init = app => {
   app.get('/users', [authentication.authenticate], users.listUsers);
   app.post('/admin/users', [authentication.validatePermission], users.addAdmin);
   app.get('/albums', [authentication.authenticate], users.listAlbums);
+
   app.get(
     '/users/:user_id/albums',
     [authentication.authenticate, authentication.validateAlbumsRequest],
