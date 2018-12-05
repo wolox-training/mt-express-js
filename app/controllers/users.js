@@ -134,7 +134,9 @@ exports.listAlbums = (req, res, next) =>
     .then(allAlbums => res.status(200).send(allAlbums))
     .catch(next);
 
-exports.listUserAlbums = (req, res, next) =>
+};
+
+exports.listUserAlbums = (req, res, next) => {
   albumsManager
     .getAllAlbumsbyOwnerId(req.params.user_id)
     .then(allAlbums => res.status(200).send({ allAlbums }))
@@ -145,3 +147,4 @@ exports.listPhotos = (req, res, next) =>
     .getPhotosByAlbumId(req.params.id)
     .then(photos => res.status(200).send({ photos }))
     .catch(next);
+};

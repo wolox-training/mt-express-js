@@ -27,3 +27,5 @@ exports.addAlbum = album =>
   albums.create(album).catch(err => {
     throw errors.databaseError(err.detail);
   });
+
+exports.getAllAlbumsbyOwnerId = ownerId => albums.findAlbumsByOwnerId(ownerId);

@@ -31,6 +31,7 @@ exports.validateAlbumsRequest = (req, res, next) => {
   return next();
 };
 
+
 exports.validatePhotosRequest = (req, res, next) => {
   const user = tokenManager.decodeToken(req.headers.authorization);
 
