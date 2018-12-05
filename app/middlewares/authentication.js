@@ -24,9 +24,8 @@ exports.validatePermission = (req, res, next) => {
 exports.validateAlbumsRequest = (req, res, next) => {
   const token = req.headers.authorization;
   const decodedToken = tokenManager.decodeToken(token);
-  const userId = Number(req.params.user_id);
 
-  if (decodedToken.role === constants.REGULAR_ROLE && decodedToken.id !== userId)
+  if (decodedToken.role === constants.REGULAR_ROLE && decodedToken.id !== Number(req.params.user_id))
     return next(errors.noAccessPermission());
 
   return next();
