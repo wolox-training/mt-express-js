@@ -84,7 +84,6 @@ exports.signIn = (req, res, next) => {
     .then(foundUser => {
       const tempPassword = user.password;
       if (foundUser) {
-        user.role = foundUser.role;
         user = foundUser;
         return bcrypt.compare(tempPassword, foundUser.password);
       }

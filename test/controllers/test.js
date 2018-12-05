@@ -440,14 +440,16 @@ describe('User Tests', () => {
           });
       });
       it('A regular user should not be able to list other users albums', done => {
+        const decodedToken = tokenManager.decodeToken(regularUserToken);
+
         chai
           .request(server)
-          .get('/users/2/albums')
+          .get(`/users/${decodedToken.id + 1}/albums`)
           .set('authorization', regularUserToken)
           .catch(err => {
             err.should.have.status(401);
+            done();
           });
-        done();
       });
     });
 
@@ -465,9 +467,11 @@ describe('User Tests', () => {
           });
       });
       it('An admin lists other users albums', done => {
+        const decodedToken = tokenManager.decodeToken(adminUserToken);
+
         chai
           .request(server)
-          .get(`/users/5/albums`)
+          .get(`/users/${decodedToken.id + 1}/albums`)
           .set('authorization', regularUserToken)
           .then(res => {
             res.should.have.status(200);
