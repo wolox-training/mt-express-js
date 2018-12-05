@@ -75,7 +75,7 @@ exports.signUp = (req, res, next) => {
 };
 
 exports.signIn = (req, res, next) => {
-  const user = req.body;
+  let user = req.body;
 
   if (!hasValidDomain(user.email)) return next(errors.invalidEmailDomain());
 
@@ -84,7 +84,7 @@ exports.signIn = (req, res, next) => {
     .then(foundUser => {
       const tempPassword = user.password;
       if (foundUser) {
-        user.role = foundUser.role;
+        user = foundUser;
         return bcrypt.compare(tempPassword, foundUser.password);
       }
       return next(errors.invalidCredentials());
@@ -131,5 +131,12 @@ exports.listAlbums = (req, res, next) => {
   albumsManager
     .getAllAlbums()
     .then(allAlbums => res.status(200).send(allAlbums))
+    .catch(next);
+};
+
+exports.listUserAlbums = (req, res, next) => {
+  albumsManager
+    .getAllAlbumsbyOwnerId(req.params.user_id)
+    .then(allAlbums => res.status(200).send({ allAlbums }))
     .catch(next);
 };

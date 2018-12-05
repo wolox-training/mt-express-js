@@ -1,5 +1,6 @@
 const errors = require('../errors');
 const request = require('request-promise');
+const albums = require('../models').albums;
 
 const allAlbumsoptions = {
   url: 'https://jsonplaceholder.typicode.com/albums',
@@ -11,3 +12,5 @@ exports.getAllAlbums = () =>
   request(allAlbumsoptions).catch(err => {
     throw errors.defaultError(err);
   });
+
+exports.getAllAlbumsbyOwnerId = ownerId => albums.findAlbumsByOwnerId(ownerId);
