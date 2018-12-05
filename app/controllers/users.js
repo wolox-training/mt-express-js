@@ -65,7 +65,7 @@ const addUser = (user, role) => {
 exports.signUp = (req, res, next) => {
   const user = req.body;
 
-  addUser(user, constants.REGULAR_ROLE)
+  return addUser(user, constants.REGULAR_ROLE)
     .then(() =>
       res.status(200).send({
         message: 'User created'
@@ -79,12 +79,11 @@ exports.signIn = (req, res, next) => {
 
   if (!hasValidDomain(user.email)) return next(errors.invalidEmailDomain());
 
-  users
+  return users
     .findUserByEmail(user.email)
     .then(foundUser => {
       const tempPassword = user.password;
       if (foundUser) {
-        user.role = foundUser.role;
         user = foundUser;
         return bcrypt.compare(tempPassword, foundUser.password);
       }
@@ -134,8 +133,6 @@ exports.listAlbums = (req, res, next) => {
     .then(allAlbums => res.status(200).send(allAlbums))
     .catch(next);
 };
-<<<<<<< HEAD
-=======
 
 exports.listUserAlbums = (req, res, next) => {
   albumsManager
@@ -143,4 +140,4 @@ exports.listUserAlbums = (req, res, next) => {
     .then(allAlbums => res.status(200).send({ allAlbums }))
     .catch(next);
 };
->>>>>>> list-bought-albums
+
