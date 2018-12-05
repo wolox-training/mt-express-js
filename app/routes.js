@@ -8,13 +8,12 @@ exports.init = app => {
   app.post('/admin/users', [authentication.validatePermission], users.addAdmin);
   app.get('/albums', [authentication.authenticate], users.listAlbums);
 
-
   app.get(
     '/users/:user_id/albums',
     [authentication.authenticate, authentication.validateAlbumsRequest],
     users.listUserAlbums
   );
-  
+
   app.get(
     '/users/albums/:id/photos',
     [authentication.authenticate, authentication.validatePhotosRequest],
