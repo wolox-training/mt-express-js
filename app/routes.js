@@ -11,17 +11,11 @@ exports.init = app => {
   app.post('/admin/users', [authentication.validatePermission], users.addAdmin);
 
   app.get('/albums', [authentication.authenticate], users.listAlbums);
-<<<<<<< HEAD
-=======
-
->>>>>>> list-albums-photos
   app.get(
     '/users/:user_id/albums',
     [authentication.authenticate, authentication.validateAlbumsRequest],
     users.listUserAlbums
   );
-<<<<<<< HEAD
-=======
 
   // Para listar las fotos, un usuario debe poder realizar un http request (GET) a "users/albums/:id/photos"
   // Se debe estar autenticado para consumir dicho recurso
@@ -36,5 +30,4 @@ exports.init = app => {
     [authentication.authenticate, authentication.validatePhotosRequest],
     users.listPhotos
   );
->>>>>>> list-albums-photos
 };

@@ -4,18 +4,8 @@ const chai = require('chai'),
   constants = require('../../app/constants'),
   users = require('../../app/models').users,
   bcrypt = require('bcryptjs'),
-<<<<<<< HEAD
-<<<<<<< HEAD
   support = require('../support/mocks'),
   tokenManager = require('../../app/services/tokenManager');
-=======
-  tokenManager = require('../../app/services/tokenManager'),
-  support = require('../support/mocks');
->>>>>>> d78d62901c655609096e0fd405cca24ec22b7696
-=======
-  tokenManager = require('../../app/services/tokenManager'),
-  support = require('../support/mocks');
->>>>>>> list-albums-photos
 
 const signUpUser = (email, password = '12345678') => {
   return chai
@@ -450,23 +440,6 @@ describe('User Tests', () => {
           });
       });
       it('A regular user should not be able to list other users albums', done => {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-        const decodedToken = tokenManager.decodeToken(regularUserToken);
-
->>>>>>> list-albums-photos
-        chai
-          .request(server)
-          .get(`/users/${decodedToken.id + 1}/albums`)
-          .set('authorization', regularUserToken)
-          .catch(err => {
-            err.should.have.status(401);
-            done();
-          });
-<<<<<<< HEAD
-        done();
-=======
         const decodedToken = tokenManager.decodeToken(regularUserToken);
 
         chai
@@ -477,9 +450,6 @@ describe('User Tests', () => {
             err.should.have.status(401);
             done();
           });
->>>>>>> d78d62901c655609096e0fd405cca24ec22b7696
-=======
->>>>>>> list-albums-photos
       });
     });
 
@@ -497,25 +467,12 @@ describe('User Tests', () => {
           });
       });
       it('An admin lists other users albums', done => {
-<<<<<<< HEAD
-<<<<<<< HEAD
-        chai
-          .request(server)
-          .get(`/users/5/albums`)
-=======
         const decodedToken = tokenManager.decodeToken(adminUserToken);
 
         chai
           .request(server)
           .get(`/users/${decodedToken.id + 1}/albums`)
->>>>>>> d78d62901c655609096e0fd405cca24ec22b7696
-=======
-        const decodedToken = tokenManager.decodeToken(adminUserToken);
 
-        chai
-          .request(server)
-          .get(`/users/${decodedToken.id + 1}/albums`)
->>>>>>> list-albums-photos
           .set('authorization', regularUserToken)
           .then(res => {
             res.should.have.status(200);

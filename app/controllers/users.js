@@ -84,18 +84,10 @@ exports.signIn = (req, res, next) => {
     .findUserByEmail(user.email)
     .then(foundUser => {
       const tempPassword = user.password;
-<<<<<<< HEAD
-      if (foundUser) {
-        user = foundUser;
-        return bcrypt.compare(tempPassword, foundUser.password);
-      }
-      return next(errors.invalidCredentials());
-=======
       if (!foundUser) throw errors.invalidCredentials();
 
       user = foundUser;
       return bcrypt.compare(tempPassword, foundUser.password);
->>>>>>> list-albums-photos
     })
     .then(valid => {
       if (!valid) throw errors.invalidCredentials();
@@ -136,20 +128,12 @@ exports.listAlbums = (req, res, next) =>
     .getAllAlbums()
     .then(allAlbums => res.status(200).send(allAlbums))
     .catch(next);
-<<<<<<< HEAD
-};
-=======
->>>>>>> list-albums-photos
 
 exports.listUserAlbums = (req, res, next) =>
   albumsManager
     .getAllAlbumsbyOwnerId(req.params.user_id)
     .then(allAlbums => res.status(200).send({ allAlbums }))
     .catch(next);
-<<<<<<< HEAD
-};
-
-=======
 
 // Para listar las fotos, un usuario debe poder realizar un http request (GET) a "users/albums/:id/photos"
 // Se debe estar autenticado para consumir dicho recurso
@@ -164,4 +148,3 @@ exports.listPhotos = (req, res, next) =>
     .getPhotosByAlbumId(Number(req.params.id))
     .then(photos => res.status(200).send({ photos }))
     .catch(next);
->>>>>>> list-albums-photos
