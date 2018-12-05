@@ -5,6 +5,7 @@ const logger = require('../logger');
 const tokenManager = require('../services/tokenManager');
 const constants = require('../constants');
 const albumsManager = require('../services/albumsManager');
+const photosManager = require('../services/photosManager');
 
 // Regex for Email domain validation
 const ARGENTINA_WOLOX_DOMAIN = new RegExp('@wolox.com.ar');
@@ -65,7 +66,7 @@ const addUser = (user, role) => {
 exports.signUp = (req, res, next) => {
   const user = req.body;
 
-  addUser(user, constants.REGULAR_ROLE)
+  return addUser(user, constants.REGULAR_ROLE)
     .then(() =>
       res.status(200).send({
         message: 'User created'
@@ -79,7 +80,7 @@ exports.signIn = (req, res, next) => {
 
   if (!hasValidDomain(user.email)) return next(errors.invalidEmailDomain());
 
-  users
+  return users
     .findUserByEmail(user.email)
     .then(foundUser => {
       const tempPassword = user.password;
@@ -101,7 +102,7 @@ exports.listUsers = (req, res, next) => {
   const limit = req.query.limit || constants.LIMIT_DEFAULT;
   const page = req.query.page || constants.PAGE_DEFAULT;
 
-  users
+  return users
     .getAllUsers(page, limit)
     .then(allUsers => {
       res.status(200).send(allUsers);
@@ -113,7 +114,7 @@ exports.listUsers = (req, res, next) => {
 exports.addAdmin = (req, res, next) => {
   const user = req.body;
 
-  users
+  return users
     .findUserByEmail(user.email)
     .then(foundUser => {
       if (foundUser) return users.updateUserRole(foundUser, constants.ADMIN_ROLE);
@@ -127,16 +128,20 @@ exports.addAdmin = (req, res, next) => {
     .catch(next);
 };
 
-exports.listAlbums = (req, res, next) => {
+exports.listAlbums = (req, res, next) =>
   albumsManager
     .getAllAlbums()
     .then(allAlbums => res.status(200).send(allAlbums))
     .catch(next);
-};
 
-exports.listUserAlbums = (req, res, next) => {
+exports.listUserAlbums = (req, res, next) =>
   albumsManager
     .getAllAlbumsbyOwnerId(req.params.user_id)
     .then(allAlbums => res.status(200).send({ allAlbums }))
     .catch(next);
-};
+
+exports.listPhotos = (req, res, next) =>
+  photosManager
+    .getPhotosByAlbumId(req.params.id)
+    .then(photos => res.status(200).send({ photos }))
+    .catch(next);

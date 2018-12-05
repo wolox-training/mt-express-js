@@ -35,3 +35,6 @@ exports.noAccessPermission = () => internalError(exports.NO_ACCESS_PERMISSION, e
 
 exports.DEPENDENCY_FAILURE = 'Dependency failure';
 exports.dependencyFailure = () => internalError(exports.DEPENDENCY_FAILURE, exports.DEPENDENCY_FAILURE);
+
+exports.NOT_FOUND = 'Resource not found';
+exports.notFoundFailure = message => internalError(message, exports.NOT_FOUND);

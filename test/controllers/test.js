@@ -5,6 +5,7 @@ const chai = require('chai'),
   users = require('../../app/models').users,
   bcrypt = require('bcryptjs'),
   tokenManager = require('../../app/services/tokenManager'),
+  albumsManager = require('../../app/services/albumsManager'),
   support = require('../support/mocks');
 
 const signUpUser = (email, password = '12345678') => {
@@ -487,6 +488,110 @@ describe('User Tests', () => {
           .get('/users/2/albums')
           .catch(err => {
             err.should.have.status(401);
+            done();
+          });
+      });
+    });
+  });
+
+  describe('/users/albums/:id/photos GET', () => {
+    let regularUserToken = null;
+    let adminUserToken = null;
+
+    const adminUserAlbum = {
+      ownerId: 1,
+      id: 1,
+      title: 'SKEREEEEEEEEE'
+    };
+
+    const regularUserAlbum = {
+      ownerId: 2,
+      id: 2,
+      title: 'MODO DIABLO'
+    };
+
+    const regularUserAlbum2 = {
+      ownerId: 3,
+      id: 3,
+      title: 'ESTADO DEMONIO'
+    };
+
+    beforeEach('A regular user is created and logged in. An album is added to each one of them', done => {
+      forceSignUpAsAdmin('orangutan@wolox.com.ar', '12345678')
+        .then(() => signIn('orangutan@wolox.com.ar', '12345678'))
+        .then(res1 => {
+          adminUserToken = res1.body.token;
+        })
+        .then(() => albumsManager.addAlbum(adminUserAlbum))
+        .then(() => albumsManager.addAlbum(regularUserAlbum))
+        .then(() => albumsManager.addAlbum(regularUserAlbum2))
+        .then(() => signUpUser('koala@wolox.com.ar', '12345678'))
+        .then(() => signIn('koala@wolox.com.ar', '12345678'))
+        .then(res2 => {
+          regularUserToken = res2.body.token;
+          done();
+        });
+    });
+    context('No user is logged in', () => {
+      it('A non logged in user trying to list photos should fail', done => {
+        chai
+          .request(server)
+          .get('/users/albums/0/photos')
+          .catch(err => {
+            err.should.have.status(401);
+            done();
+          });
+      });
+    });
+    context('An admin is logged in', () => {
+      it('An admin should be able to list his own photos', done => {
+        const decodedToken = tokenManager.decodeToken(adminUserToken);
+        support.mockPhotosGetRequest(decodedToken.id);
+        chai
+          .request(server)
+          .get(`/users/albums/${decodedToken.id}/photos`)
+          .set('authorization', adminUserToken)
+          .then(res => {
+            res.should.have.status(200);
+            done();
+          });
+      });
+      it('An admin should not be able to list other users photos', done => {
+        const decodedToken = tokenManager.decodeToken(adminUserToken);
+        support.mockPhotosGetRequest(decodedToken.id);
+        chai
+          .request(server)
+          .get(`/users/albums/${decodedToken.id + 1}/photos`)
+          .set('authorization', adminUserToken)
+          .catch(err => {
+            err.should.have.status(404);
+            done();
+          });
+      });
+    });
+    context('A regular user is logged in', () => {
+      it('A regular user should be able to list his own photos', done => {
+        const decodedToken = tokenManager.decodeToken(regularUserToken);
+        support.mockPhotosGetRequest(decodedToken.id);
+        chai
+          .request(server)
+          .get(`/users/albums/${decodedToken.id}/photos`)
+          .set('authorization', regularUserToken)
+          .then(res => {
+            res.should.have.status(200);
+            done();
+          });
+      });
+
+      it('A regular user should no the able to list other users photos', done => {
+        const decodedToken = tokenManager.decodeToken(regularUserToken);
+        support.mockPhotosGetRequest(decodedToken.id);
+        chai
+          .request(server)
+          .get(`/users/albums/${decodedToken.id + 1}/photos`)
+          .set('authorization', regularUserToken)
+          .catch(err => {
+            err.should.have.status(404);
             done();
           });
       });
