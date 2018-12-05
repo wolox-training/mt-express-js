@@ -5,6 +5,7 @@ const logger = require('../logger');
 const tokenManager = require('../services/tokenManager');
 const constants = require('../constants');
 const albumsManager = require('../services/albumsManager');
+const photosManager = require('../services/photosManager');
 
 // Regex for Email domain validation
 const ARGENTINA_WOLOX_DOMAIN = new RegExp('@wolox.com.ar');
@@ -79,18 +80,17 @@ exports.signIn = (req, res, next) => {
 
   if (!hasValidDomain(user.email)) return next(errors.invalidEmailDomain());
 
-  users
+  return users
     .findUserByEmail(user.email)
     .then(foundUser => {
       const tempPassword = user.password;
-      if (foundUser) {
-        user = foundUser;
-        return bcrypt.compare(tempPassword, foundUser.password);
-      }
-      return next(errors.invalidCredentials());
+      if (!foundUser) throw errors.invalidCredentials();
+
+      user = foundUser;
+      return bcrypt.compare(tempPassword, foundUser.password);
     })
     .then(valid => {
-      if (!valid) return next(errors.invalidCredentials());
+      if (!valid) throw errors.invalidCredentials();
       const token = tokenManager.createToken(user);
       res.status(200).send({ token });
     })
@@ -101,7 +101,7 @@ exports.listUsers = (req, res, next) => {
   const limit = req.query.limit || constants.LIMIT_DEFAULT;
   const page = req.query.page || constants.PAGE_DEFAULT;
 
-  users
+  return users
     .getAllUsers(page, limit)
     .then(allUsers => {
       res.status(200).send(allUsers);
@@ -113,30 +113,38 @@ exports.listUsers = (req, res, next) => {
 exports.addAdmin = (req, res, next) => {
   const user = req.body;
 
-  users
+  return users
     .findUserByEmail(user.email)
     .then(foundUser => {
       if (foundUser) return users.updateUserRole(foundUser, constants.ADMIN_ROLE);
       return addUser(user, constants.ADMIN_ROLE);
     })
-    .then(() => {
-      res.status(200).send({
-        message: 'Admin added'
-      });
-    })
+    .then(() => res.status(200).send({ message: 'Admin added' }))
     .catch(next);
 };
 
-exports.listAlbums = (req, res, next) => {
+exports.listAlbums = (req, res, next) =>
   albumsManager
     .getAllAlbums()
     .then(allAlbums => res.status(200).send(allAlbums))
     .catch(next);
-};
 
-exports.listUserAlbums = (req, res, next) => {
+exports.listUserAlbums = (req, res, next) =>
   albumsManager
     .getAllAlbumsbyOwnerId(req.params.user_id)
     .then(allAlbums => res.status(200).send({ allAlbums }))
     .catch(next);
-};
+
+// Para listar las fotos, un usuario debe poder realizar un http request (GET) a "users/albums/:id/photos"
+// Se debe estar autenticado para consumir dicho recurso
+// Un usuario solo podra ver las fotos de albumes que el haya comprado
+// Un administrador solo podra ver las fotos de albumes que haya comprado
+// Se deben agregar Tests, para los cuales se debera mockear la respuesta del servicio externo
+// Realizar logs informativos en caso de considerarlo necesario.
+// Loggear un error en caso de falla de la base de datos.
+
+exports.listPhotos = (req, res, next) =>
+  photosManager
+    .getPhotosByAlbumId(Number(req.params.id))
+    .then(photos => res.status(200).send({ photos }))
+    .catch(next);

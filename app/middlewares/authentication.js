@@ -31,3 +31,21 @@ exports.validateAlbumsRequest = (req, res, next) => {
 
   return next();
 };
+
+// Para listar las fotos, un usuario debe poder realizar un http request (GET) a "users/albums/:id/photos"
+// Se debe estar autenticado para consumir dicho recurso
+// Un usuario solo podra ver las fotos de albumes que el haya comprado
+// Un administrador solo podra ver las fotos de albumes que haya comprado
+// Se deben agregar Tests, para los cuales se debera mockear la respuesta del servicio externo
+// Realizar logs informativos en caso de considerarlo necesario.
+// Loggear un error en caso de falla de la base de datos.
+
+exports.validatePhotosRequest = (req, res, next) => {
+  const token = req.headers.authorization;
+  const decodedToken = tokenManager.decodeToken(token);
+  const albumOwnerId = Number(req.params.id);
+
+  if (decodedToken.id !== albumOwnerId) return next(errors.noAccessPermission());
+
+  return next();
+};
