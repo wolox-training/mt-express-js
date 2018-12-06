@@ -38,3 +38,6 @@ exports.dependencyFailure = message => internalError(message, exports.DEPENDENCY
 
 exports.NOT_FOUND = 'Resource not found';
 exports.notFoundFailure = message => internalError(message, exports.NOT_FOUND);
+
+exports.SESSION_EXPIRED = 'Session expired';
+exports.sessionExpired = () => internalError(exports.SESSION_EXPIRED, exports.SESSION_EXPIRED);

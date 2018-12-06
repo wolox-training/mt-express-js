@@ -18,7 +18,8 @@ const statusCodes = {
   [errors.INVALID_CREDENTIALS]: 401,
   [errors.NO_ACCESS_PERMISSION]: 401,
   [errors.DEPENDENCY_FAILURE]: 400,
-  [errors.NOT_FOUND]: 404
+  [errors.NOT_FOUND]: 404,
+  [errors.SESSION_EXPIRED]: 401
 };
 
 exports.handle = (error, req, res, next) => {

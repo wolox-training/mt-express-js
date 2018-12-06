@@ -1,7 +1,7 @@
 const jwt = require('jwt-simple');
+const moment = require('moment');
 
 const KEY = 'secret';
-const EXPIRATION_TIME = '1h';
 
 exports.createToken = data => jwt.encode(data, KEY);
 
