@@ -84,14 +84,12 @@ exports.signIn = (req, res, next) => {
     .findUserByEmail(user.email)
     .then(foundUser => {
       const tempPassword = user.password;
-      if (foundUser) {
-        user = foundUser;
-        return bcrypt.compare(tempPassword, foundUser.password);
-      }
-      return next(errors.invalidCredentials());
+      if (!foundUser) throw errors.invalidCredentials();
+      user = foundUser;
+      return bcrypt.compare(tempPassword, foundUser.password);
     })
     .then(valid => {
-      if (!valid) return next(errors.invalidCredentials());
+      if (!valid) throw errors.invalidCredentials();
       const token = tokenManager.createToken(user);
       res.status(200).send({ token });
     })

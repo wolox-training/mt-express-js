@@ -6,16 +6,16 @@ const albumsManager = require('../services/albumsManager');
 // Checks if an user is logged in
 exports.authenticate = (req, res, next) => {
   const token = req.headers.authorization;
-  if (!token) throw errors.authenticationFailure();
+  if (!token) return next(errors.authenticationFailure());
   return next();
 };
 
 // Checks if the user has admin permission
 exports.validatePermission = (req, res, next) => {
   const token = req.headers.authorization;
-  if (!token) throw errors.noAccessPermission();
+  if (!token) return next(errors.noAccessPermission());
   const decodedToken = tokenManager.decodeToken(token);
-  if (decodedToken.role !== constants.ADMIN_ROLE) throw errors.noAccessPermission();
+  if (decodedToken.role !== constants.ADMIN_ROLE) return next(errors.noAccessPermission());
   return next();
 };
 
@@ -26,7 +26,7 @@ exports.validateAlbumsRequest = (req, res, next) => {
   const decodedToken = tokenManager.decodeToken(token);
 
   if (decodedToken.role === constants.REGULAR_ROLE && decodedToken.id !== Number(req.params.user_id))
-    throw errors.noAccessPermission();
+    return next(errors.noAccessPermission());
 
   return next();
 };
@@ -40,7 +40,7 @@ exports.validatePhotosRequest = (req, res, next) => {
       ownerId: user.id
     })
     .then(album => {
-      if (!album) throw errors.notFoundFailure('Could not find a match for the provided album id');
+      if (!album) return next(errors.notFoundFailure('Could not find a match for the provided album id'));
       return next();
     })
     .catch(next);
