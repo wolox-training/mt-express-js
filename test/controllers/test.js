@@ -6,7 +6,8 @@ const chai = require('chai'),
   bcrypt = require('bcryptjs'),
   tokenManager = require('../../app/services/tokenManager'),
   albumsManager = require('../../app/services/albumsManager'),
-  support = require('../support/mocks');
+  support = require('../support/mocks'),
+  data = require('../support/data');
 
 const signUpUser = (email, password = '12345678') => {
   return chai
@@ -494,43 +495,35 @@ describe('User Tests', () => {
     });
   });
 
-  describe('/users/albums/:id/photos GET', () => {
+  describe.only('/users/albums/:id/photos GET', () => {
     let regularUserToken = null;
     let adminUserToken = null;
 
-    const adminUserAlbum = {
-      ownerId: 1,
-      id: 1,
-      title: 'SKEREEEEEEEEE'
-    };
-
-    const regularUserAlbum = {
-      ownerId: 2,
-      id: 2,
-      title: 'MODO DIABLO'
-    };
-
-    const regularUserAlbum2 = {
-      ownerId: 3,
-      id: 3,
-      title: 'ESTADO DEMONIO'
-    };
-
     beforeEach('A regular user is created and logged in. An album is added to each one of them', done => {
-      forceSignUpAsAdmin('orangutan@wolox.com.ar', '12345678')
-        .then(() => signIn('orangutan@wolox.com.ar', '12345678'))
-        .then(res1 => {
+      const signUpAdminUser = forceSignUpAsAdmin('orangutan@wolox.com.ar', '12345678');
+      const signUpRegularUser = signUpUser('koala@wolox.com.ar', '12345678');
+
+      const signInAdminUser = signIn('orangutan@wolox.com.ar', '12345678');
+
+      const signInRegularUser = signIn('koala@wolox.com.ar', '12345678');
+
+      const addAdminUserAlbum = albumsManager.addAlbum(data.adminUserAlbum);
+      const addRegularUserAlbum1 = albumsManager.addAlbum(data.regularUserAlbum1);
+      const addRegularUserAlbum2 = albumsManager.addAlbum(data.regularUserAlbum2);
+
+      Promise.all([
+        signUpAdminUser,
+        signUpRegularUser,
+        addAdminUserAlbum,
+        addRegularUserAlbum1,
+        addRegularUserAlbum2
+      ]).then(() =>
+        Promise.all([signInAdminUser, signInRegularUser]).then(([res1, res2]) => {
           adminUserToken = res1.body.token;
-        })
-        .then(() => albumsManager.addAlbum(adminUserAlbum))
-        .then(() => albumsManager.addAlbum(regularUserAlbum))
-        .then(() => albumsManager.addAlbum(regularUserAlbum2))
-        .then(() => signUpUser('koala@wolox.com.ar', '12345678'))
-        .then(() => signIn('koala@wolox.com.ar', '12345678'))
-        .then(res2 => {
           regularUserToken = res2.body.token;
           done();
-        });
+        })
+      );
     });
     context('No user is logged in', () => {
       it('A non logged in user trying to list photos should fail', done => {
@@ -553,6 +546,8 @@ describe('User Tests', () => {
           .set('authorization', adminUserToken)
           .then(res => {
             res.should.have.status(200);
+            res.body.photos.albumId.should.equal(decodedToken.id);
+            res.body.photos.title.should.equal(support.expectedPhotosResponse(decodedToken.id).title);
             done();
           });
       });
@@ -579,6 +574,8 @@ describe('User Tests', () => {
           .set('authorization', regularUserToken)
           .then(res => {
             res.should.have.status(200);
+            res.body.photos.albumId.should.equal(decodedToken.id);
+            res.body.photos.title.should.equal(support.expectedPhotosResponse(decodedToken.id).title);
             done();
           });
       });

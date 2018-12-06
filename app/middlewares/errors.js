@@ -17,7 +17,7 @@ const statusCodes = {
   [errors.AUTHENTICATION_FAILURE]: 401,
   [errors.INVALID_CREDENTIALS]: 401,
   [errors.NO_ACCESS_PERMISSION]: 401,
-  [errors.DEPENDENCY_FAILURE]: 424,
+  [errors.DEPENDENCY_FAILURE]: 400,
   [errors.NOT_FOUND]: 404
 };
 

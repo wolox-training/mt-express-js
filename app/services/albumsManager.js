@@ -10,7 +10,7 @@ const allAlbumsoptions = {
 
 exports.getAllAlbums = () =>
   request(allAlbumsoptions).catch(err => {
-    throw errors.dependencyFailure();
+    throw errors.dependencyFailure(err);
   });
 
 exports.getAllAlbumsbyOwnerId = ownerId =>

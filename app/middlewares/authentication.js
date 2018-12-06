@@ -34,7 +34,7 @@ exports.validateAlbumsRequest = (req, res, next) => {
 exports.validatePhotosRequest = (req, res, next) => {
   const user = tokenManager.decodeToken(req.headers.authorization);
 
-  albumsManager
+  return albumsManager
     .getAlbumByParams({
       id: req.params.id,
       ownerId: user.id
