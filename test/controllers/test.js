@@ -495,7 +495,7 @@ describe('User Tests', () => {
     });
   });
 
-  describe.only('/users/albums/:id/photos GET', () => {
+  describe('/users/albums/:id/photos GET', () => {
     let regularUserToken = null;
     let adminUserToken = null;
 
