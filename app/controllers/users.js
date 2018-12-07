@@ -85,7 +85,6 @@ exports.signIn = (req, res, next) => {
     .then(foundUser => {
       const tempPassword = user.password;
       if (!foundUser) throw errors.invalidCredentials();
-
       user = foundUser;
       return bcrypt.compare(tempPassword, foundUser.password);
     })
@@ -135,16 +134,8 @@ exports.listUserAlbums = (req, res, next) =>
     .then(allAlbums => res.status(200).send({ allAlbums }))
     .catch(next);
 
-// Para listar las fotos, un usuario debe poder realizar un http request (GET) a "users/albums/:id/photos"
-// Se debe estar autenticado para consumir dicho recurso
-// Un usuario solo podra ver las fotos de albumes que el haya comprado
-// Un administrador solo podra ver las fotos de albumes que haya comprado
-// Se deben agregar Tests, para los cuales se debera mockear la respuesta del servicio externo
-// Realizar logs informativos en caso de considerarlo necesario.
-// Loggear un error en caso de falla de la base de datos.
-
 exports.listPhotos = (req, res, next) =>
   photosManager
-    .getPhotosByAlbumId(Number(req.params.id))
+    .getPhotosByAlbumId(req.params.id)
     .then(photos => res.status(200).send({ photos }))
     .catch(next);

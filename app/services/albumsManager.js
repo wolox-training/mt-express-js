@@ -10,7 +10,22 @@ const allAlbumsoptions = {
 
 exports.getAllAlbums = () =>
   request(allAlbumsoptions).catch(err => {
-    throw errors.defaultError(err);
+    throw errors.dependencyFailure(err);
+  });
+
+exports.getAllAlbumsbyOwnerId = ownerId =>
+  albums.findAlbumsByOwnerId(ownerId).catch(err => {
+    throw errors.databaseError(err.detail);
+  });
+
+exports.getAlbumByParams = params =>
+  albums.findOne({ where: params }).catch(err => {
+    throw errors.databaseError(err.detail);
+  });
+
+exports.addAlbum = album =>
+  albums.create(album).catch(err => {
+    throw errors.databaseError(err.detail);
   });
 
 exports.getAllAlbumsbyOwnerId = ownerId => albums.findAlbumsByOwnerId(ownerId);

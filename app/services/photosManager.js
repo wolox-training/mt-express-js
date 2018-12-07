@@ -3,9 +3,9 @@ const request = require('request-promise');
 
 exports.getPhotosByAlbumId = albumId =>
   request({
-    url: `https://jsonplaceholder.typicode.com/albums/${albumId}/photos`,
+    url: `https://jsonplaceholer.typicode.com/users/albums/${albumId}/photos`,
     method: 'GET',
     json: true
   }).catch(err => {
-    throw errors.defaultError(err);
+    throw errors.dependencyFailure();
   });

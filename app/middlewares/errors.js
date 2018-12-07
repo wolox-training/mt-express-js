@@ -5,7 +5,6 @@ const DEFAULT_STATUS_CODE = 500;
 
 const statusCodes = {
   [errors.INVALID_USER]: 400,
-  [errors.BOOK_NOT_FOUND]: 404,
   [errors.SAVING_ERROR]: 400,
   [errors.DATABASE_ERROR]: 503,
   [errors.DEFAULT_ERROR]: 500,
@@ -18,7 +17,9 @@ const statusCodes = {
   [errors.AUTHENTICATION_FAILURE]: 401,
   [errors.INVALID_CREDENTIALS]: 401,
   [errors.NO_ACCESS_PERMISSION]: 401,
-  [errors.DEPENDENCY_FAILURE]: 424
+  [errors.DEPENDENCY_FAILURE]: 400,
+  [errors.NOT_FOUND]: 404,
+  [errors.SESSION_EXPIRED]: 401
 };
 
 exports.handle = (error, req, res, next) => {
