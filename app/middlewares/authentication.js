@@ -8,12 +8,15 @@ const config = require('../../config');
 // Checks if an user is logged in
 exports.authenticate = (req, res, next) => {
   if (!req.headers.authorization) return next(errors.authenticationFailure());
-  const token = req.headers.authorization;
-  req.user = tokenManager.decodeToken(token);
-  const top = moment(req.user.creationTime).add(config.common.session.expirationTime, 'seconds');
+  const decodedToken = tokenManager.decodeToken(req.headers.authorization);
+  const sessionTimeLimit = moment(decodedToken.creationTime).add(
+    config.common.session.expirationTime,
+    'seconds'
+  );
   const currentTime = moment();
-  const result = moment(currentTime).isAfter(top);
+  const result = moment(currentTime).isAfter(sessionTimeLimit);
   if (result) return next(errors.sessionExpired());
+  req.user = decodedToken;
   return next();
 };
 
