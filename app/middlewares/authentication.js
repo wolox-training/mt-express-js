@@ -2,16 +2,21 @@ const tokenManager = require('../services/tokenManager');
 const errors = require('../errors');
 const constants = require('../constants');
 const albumsManager = require('../services/albumsManager');
+const moment = require('moment');
+const config = require('../../config');
 
 // Checks if an user is logged in
 exports.authenticate = (req, res, next) => {
-  const token = req.headers.authorization;
-  if (!token) return next(errors.authenticationFailure());
-
+  if (!req.headers.authorization) return next(errors.authenticationFailure());
   const decodedToken = tokenManager.decodeToken(req.headers.authorization);
-
+  const sessionTimeLimit = moment(decodedToken.creationTime).add(
+    config.common.session.expirationTime,
+    'seconds'
+  );
+  const currentTime = moment();
+  const result = moment(currentTime).isAfter(sessionTimeLimit);
+  if (result) return next(errors.sessionExpired());
   req.user = decodedToken;
-
   return next();
 };
 
@@ -26,7 +31,6 @@ exports.validatePermission = (req, res, next) => {
 exports.validateAlbumsRequest = (req, res, next) => {
   if (req.user.role === constants.REGULAR_ROLE && req.user.id !== Number(req.params.user_id))
     return next(errors.noAccessPermission());
-
   return next();
 };
 

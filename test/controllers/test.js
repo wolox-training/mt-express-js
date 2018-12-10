@@ -474,6 +474,7 @@ describe('User Tests', () => {
         chai
           .request(server)
           .get(`/users/${decodedToken.id + 1}/albums`)
+
           .set('authorization', regularUserToken)
           .then(res => {
             res.should.have.status(200);
@@ -592,6 +593,28 @@ describe('User Tests', () => {
             done();
           });
       });
+    });
+  });
+  describe('Session expiration', () => {
+    it('A user is signed up and logged in, after a second the session should expire', done => {
+      signUpUser('miguel.toscano@wolox.com.ar', '12345678')
+        .then(() => signIn('miguel.toscano@wolox.com.ar', '12345678'))
+        .then(res1 => {
+          setTimeout(
+            res => {
+              chai
+                .request(server)
+                .get('/albums')
+                .set('authorization', res.body.token)
+                .catch(err => {
+                  err.should.have.status(401);
+                  done();
+                });
+            },
+            1500,
+            res1
+          );
+        });
     });
   });
 });
