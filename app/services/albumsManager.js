@@ -29,3 +29,8 @@ exports.addAlbum = album =>
   });
 
 exports.getAllAlbumsbyOwnerId = ownerId => albums.findAlbumsByOwnerId(ownerId);
+
+exports.findAlbumById = albumId =>
+  albums.findOne({ where: albumId }).catch(err => {
+    throw errors.databaseError(err.detail);
+  });

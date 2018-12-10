@@ -140,3 +140,24 @@ exports.listPhotos = (req, res, next) =>
     .getPhotosByAlbumId(req.params.id)
     .then(photos => res.status(200).send({ photos }))
     .catch(next);
+
+exports.buyAlbum = (req, res, next) => {
+  // Autenticar que este logeado
+  // Recibe el id del album por comprar
+  // Validar que dicho album exista
+  // Validar que el usuario no tenga el album (no puede tener 2 veces el mismo)
+  const decodedToken = tokenManager.decodeToken(req.headers.authorization);
+  const albumId = req.params.id;
+
+  const albumParams = {
+    ownerId: decodedToken.id,
+    id: albumId
+  };
+
+  return albumsManager
+    .getAlbumByParams(albumParams)
+    .then(foundAlbum => {
+      if (foundAlbum) throw errors.
+    })
+    .catch(next);
+};
