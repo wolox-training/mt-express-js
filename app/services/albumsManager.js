@@ -28,4 +28,13 @@ exports.addAlbum = album =>
     throw errors.databaseError(err.detail);
   });
 
+exports.findAlbumById = albumId =>
+  request({
+    url: `https://jsonplaceholder.typicode.com/albums${albumId}`,
+    method: 'GET',
+    json: true
+  }).catch(err => {
+    throw errors.dependencyFailure();
+  });
+
 exports.getAllAlbumsbyOwnerId = ownerId => albums.findAlbumsByOwnerId(ownerId);

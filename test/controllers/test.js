@@ -46,6 +46,16 @@ const forceSignUpAsAdmin = (email, password) => {
   });
 };
 
+const forceAlbum = (ownerId, albumId, title) => {
+  const newAlbum = {
+    ownerId,
+    id: albumId,
+    title
+  };
+
+  return albumsManager.addAlbum(newAlbum);
+};
+
 describe('User Tests', () => {
   describe('/signup POST', () => {
     context('', () => {
@@ -616,5 +626,23 @@ describe('User Tests', () => {
           );
         });
     });
+  });
+  describe.only('/albums/:id POST', () => {
+    beforeEach('An album is added to the database', () => {
+      forceAlbum(1, 1, 'Straighten the rudder');
+    });
+
+    context('No logged in user', () => {
+      it('A non logged in user trying to buy an album fails', done => {
+        chai
+          .request(server)
+          .post('/albums/1')
+          .catch(err => {
+            err.should.have.status(401);
+            done();
+          });
+      });
+    });
+    context('A user is logged in', () => {});
   });
 });

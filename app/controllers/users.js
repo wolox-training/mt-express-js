@@ -140,3 +140,30 @@ exports.listPhotos = (req, res, next) =>
     .getPhotosByAlbumId(req.params.id)
     .then(photos => res.status(200).send({ photos }))
     .catch(next);
+
+exports.buyAlbum = (req, res, next) => {
+  const albumId = req.params.id;
+  const userId = req.user.id;
+  const boughtAlbum = {
+    id: req.params.id,
+    ownerId: req.user.id
+  };
+  // Validar que el album exista
+  // Validar que el usuario no posea dicho album
+  // Traer el titulo del album desde el jsonplaceholder.com
+  // Cargar dicho album en la base de datos
+  return albumsManager
+    .findAlbumById(req.params.id)
+    .then(foundAlbum1 => {
+      if (!foundAlbum1) throw errors.notFoundFailure();
+
+      boughtAlbum.title = foundAlbum1.title;
+
+      return albumsManager.findAlbumByParams(boughtAlbum).then(foundAlbum2 => {
+        if (foundAlbum2) throw errors.albumAlreadyOwned();
+
+        albumsManager.addAlbum(boughtAlbum);
+      });
+    })
+    .catch(next);
+};

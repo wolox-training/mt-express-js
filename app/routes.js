@@ -22,4 +22,6 @@ exports.init = app => {
     [authentication.authenticate, authentication.validatePhotosRequest],
     users.listPhotos
   );
+
+  app.post('/albums/:id', [authentication.authenticate], users.buyAlbum);
 };
