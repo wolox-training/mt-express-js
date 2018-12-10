@@ -6,6 +6,7 @@ const tokenManager = require('../services/tokenManager');
 const constants = require('../constants');
 const albumsManager = require('../services/albumsManager');
 const photosManager = require('../services/photosManager');
+const moment = require('moment');
 
 // Regex for Email domain validation
 const ARGENTINA_WOLOX_DOMAIN = new RegExp('@wolox.com.ar');
@@ -85,7 +86,7 @@ exports.signIn = (req, res, next) => {
     .then(foundUser => {
       const tempPassword = user.password;
       if (!foundUser) throw errors.invalidCredentials();
-      user = foundUser;
+      user = foundUser.dataValues;
       return bcrypt.compare(tempPassword, foundUser.password);
     })
     .then(valid => {
