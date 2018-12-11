@@ -29,7 +29,7 @@ exports.validatePermission = (req, res, next) => {
 // Checks that a regular user can just request for his own albums, while
 // an admin can request for any user's album
 exports.validateAlbumsRequest = (req, res, next) => {
-  if (req.user.role === constants.REGULAR_ROLE && req.user.id !== Number(req.params.user_id))
+  if (req.user.role === constants.REGULAR_ROLE && req.user.id !== parseInt(req.params.user_id))
     return next(errors.noAccessPermission());
   return next();
 };
