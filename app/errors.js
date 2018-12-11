@@ -41,3 +41,6 @@ exports.notFoundFailure = message => internalError(message, exports.NOT_FOUND);
 
 exports.SESSION_EXPIRED = 'Session expired';
 exports.sessionExpired = () => internalError(exports.SESSION_EXPIRED, exports.SESSION_EXPIRED);
+
+exports.ALBUM_ALREADY_OWNED = 'You already own this album';
+exports.albumAlreadyOwned = () => internalError(exports.ALBUM_ALREADY_OWNED, exports.ALBUM_ALREADY_OWNED);

@@ -46,6 +46,16 @@ const forceSignUpAsAdmin = (email, password) => {
   });
 };
 
+const forceAlbum = (ownerId, albumId, title) => {
+  const newAlbum = {
+    ownerId,
+    id: albumId,
+    title
+  };
+
+  return albumsManager.addAlbum(newAlbum);
+};
+
 describe('User Tests', () => {
   describe('/signup POST', () => {
     context('', () => {
@@ -389,9 +399,10 @@ describe('User Tests', () => {
           .set('authorization', token)
           .then(res3 => {
             res3.should.have.status(200);
-            res3.body.id.should.equal(support.expectedAlbumsResponse.id);
-            res3.body.userId.should.equal(support.expectedAlbumsResponse.userId);
-            res3.body.title.should.equal(support.expectedAlbumsResponse.title);
+            console.log(res3.body);
+            res3.body.allAlbums[0].userId.should.equal(1);
+            res3.body.allAlbums[0].id.should.equal(1);
+            res3.body.allAlbums[0].title.should.equal('quidem molestiae enim');
             done();
           });
       });
@@ -615,6 +626,108 @@ describe('User Tests', () => {
             res1
           );
         });
+    });
+  });
+  describe('/albums/:id POST', () => {
+    let regularUserToken = null;
+    let adminUserToken = null;
+
+    beforeEach('A regular user is created and logged in. An album is added to each one of them', done => {
+      const signUpAdminUser = forceSignUpAsAdmin('orangutan@wolox.com.ar', '12345678');
+      const signUpRegularUser = signUpUser('koala@wolox.com.ar', '12345678');
+      const forceAlbum1 = forceAlbum(1, 1, 'Straighten the rudder');
+      const forceAlbum2 = forceAlbum(2, 2, 'DADDY YANKEE BIGGEST HITS');
+      const signInAdminUser = signIn('orangutan@wolox.com.ar', '12345678');
+      const signInRegularUser = signIn('koala@wolox.com.ar', '12345678');
+
+      Promise.all([signUpAdminUser, signUpRegularUser, forceAlbum1, forceAlbum2]).then(() =>
+        Promise.all([signInAdminUser, signInRegularUser]).then(([res1, res2]) => {
+          adminUserToken = res1.body.token;
+          regularUserToken = res2.body.token;
+          done();
+        })
+      );
+    });
+
+    context('No user is logged in', () => {
+      it('A non logged in user trying to buy an album fails', done => {
+        chai
+          .request(server)
+          .post('/albums/1')
+          .catch(err => {
+            err.should.have.status(401);
+            done();
+          });
+      });
+    });
+
+    context('A user is logged in', () => {
+      it('An admin user should be able to buy an album', done => {
+        const decodedToken = tokenManager.decodeToken(adminUserToken);
+
+        const albumId = 11;
+
+        chai
+          .request(server)
+          .post(`/albums/${albumId}`)
+          .set('authorization', adminUserToken)
+          .then(res => {
+            res.should.have.status(200);
+            res.body.boughtAlbum.title.should.equal('quam nostrum impedit mollitia quod et dolor');
+            res.body.boughtAlbum.id.should.equal(albumId);
+            res.body.boughtAlbum.ownerId.should.equal(decodedToken.id);
+            done();
+          });
+      });
+
+      it('A regular user should be able to buy an album', done => {
+        const decodedToken = tokenManager.decodeToken(regularUserToken);
+        const albumId = 10;
+
+        support.mockAlbumsGetRequest(albumId); //
+
+        chai
+          .request(server)
+          .post(`/albums/${albumId}`)
+          .set('authorization', regularUserToken)
+          .then(res => {
+            res.should.have.status(200);
+            res.body.boughtAlbum.title.should.equal('distinctio laborum qui');
+            res.body.boughtAlbum.id.should.equal(10);
+            res.body.boughtAlbum.ownerId.should.equal(decodedToken.id);
+            done();
+          });
+      });
+
+      it('An admin user should not be able to buy an alreadey owned album', done => {
+        const alreadyOwnedAlbumId = 1;
+
+        support.mockAlbumsGetRequest(alreadyOwnedAlbumId);
+
+        chai
+          .request(server)
+          .post(`/albums/${alreadyOwnedAlbumId}`)
+          .set('authorization', adminUserToken)
+          .catch(err => {
+            err.should.have.status(403);
+            done();
+          });
+      });
+
+      it('A regular user should not be able to buy an already owned album', done => {
+        const alreadyOwnedAlbumId = 2;
+
+        support.mockAlbumsGetRequest(alreadyOwnedAlbumId);
+
+        chai
+          .request(server)
+          .post(`/albums/${alreadyOwnedAlbumId}`)
+          .set('authorization', regularUserToken)
+          .catch(err => {
+            err.should.have.status(403);
+            done();
+          });
+      });
     });
   });
 });

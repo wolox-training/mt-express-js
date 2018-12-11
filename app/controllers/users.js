@@ -126,7 +126,7 @@ exports.addAdmin = (req, res, next) => {
 exports.listAlbums = (req, res, next) =>
   albumsManager
     .getAllAlbums()
-    .then(allAlbums => res.status(200).send(allAlbums))
+    .then(allAlbums => res.status(200).send({ allAlbums }))
     .catch(next);
 
 exports.listUserAlbums = (req, res, next) =>
@@ -142,22 +142,25 @@ exports.listPhotos = (req, res, next) =>
     .catch(next);
 
 exports.buyAlbum = (req, res, next) => {
-  // Autenticar que este logeado
-  // Recibe el id del album por comprar
-  // Validar que dicho album exista
-  // Validar que el usuario no tenga el album (no puede tener 2 veces el mismo)
-  const decodedToken = tokenManager.decodeToken(req.headers.authorization);
-  const albumId = req.params.id;
-
-  const albumParams = {
-    ownerId: decodedToken.id,
-    id: albumId
+  const boughtAlbum = {
+    id: Number(req.params.id),
+    ownerId: Number(req.user.id)
   };
 
   return albumsManager
-    .getAlbumByParams(albumParams)
-    .then(foundAlbum => {
-      if (foundAlbum) throw errors.
+    .findAlbumById(req.params.id)
+    .then(foundAlbum1 => {
+      if (!foundAlbum1) throw errors.notFoundFailure();
+
+      boughtAlbum.title = String(foundAlbum1.title);
+
+      return albumsManager.getAlbumByParams(boughtAlbum).then(foundAlbum2 => {
+        if (foundAlbum2) throw errors.albumAlreadyOwned();
+
+        return albumsManager.addAlbum(boughtAlbum).then(() => {
+          res.status(200).send({ boughtAlbum });
+        });
+      });
     })
     .catch(next);
 };

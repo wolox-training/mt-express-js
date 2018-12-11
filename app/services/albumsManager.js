@@ -18,19 +18,37 @@ exports.getAllAlbumsbyOwnerId = ownerId =>
     throw errors.databaseError(err.detail);
   });
 
-exports.getAlbumByParams = params =>
-  albums.findOne({ where: params }).catch(err => {
+exports.getAlbumByParams = params => {
+  const album = {
+    ownerId: params.ownerId,
+    id: params.id
+  };
+
+  return albums.findOne({ where: { ownerId: album.ownerId, id: album.id } }).catch(err => {
     throw errors.databaseError(err.detail);
   });
+};
 
 exports.addAlbum = album =>
   albums.create(album).catch(err => {
     throw errors.databaseError(err.detail);
   });
 
-exports.getAllAlbumsbyOwnerId = ownerId => albums.findAlbumsByOwnerId(ownerId);
-
 exports.findAlbumById = albumId =>
-  albums.findOne({ where: albumId }).catch(err => {
-    throw errors.databaseError(err.detail);
+  request({
+    url: `https://jsonplaceholder.typicode.com/albums/${albumId}`,
+    method: 'GET',
+    json: true
+  }).catch(err => {
+    throw errors.dependencyFailure();
   });
+
+exports.getAllAlbumsbyOwnerId = ownerId =>
+  albums.findAlbumsByOwnerId(ownerId).catch(err => {
+    throw errors.databaseError();
+  });
+
+// exports.findAlbumById = albumId =>
+//   albums.findOne({ where: albumId }).catch(err => {
+//     throw errors.databaseError(err.detail);
+//   });
