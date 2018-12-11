@@ -42,14 +42,14 @@ exports.validateAlbumsBuyRequest = (req, res, next) => {
     })
     .then(foundAlbum => {
       if (foundAlbum) return next(errors.albumAlreadyOwned());
-    })
-    .then(next);
+      return next();
+    });
 };
 exports.validatePhotosRequest = (req, res, next) =>
   albumsManager
     .getAlbumByParams({
-      id: req.params.id,
-      ownerId: req.user.id
+      id: parseInt(req.params.id),
+      ownerId: parseInt(req.user.id)
     })
     .then(album => {
       if (!album) return next(errors.notFoundFailure('Could not find a match for the provided album id'));

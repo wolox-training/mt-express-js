@@ -18,16 +18,10 @@ exports.getAllAlbumsbyOwnerId = ownerId =>
     throw errors.databaseError(err.detail);
   });
 
-exports.getAlbumByParams = params => {
-  const album = {
-    ownerId: parseInt(params.ownerId),
-    id: parseInt(params.id)
-  };
-
-  return albums.findOne({ where: album }).catch(err => {
+exports.getAlbumByParams = params =>
+  albums.findOne({ where: { ownerId: parseInt(params.ownerId), id: parseInt(params.id) } }).catch(err => {
     throw errors.databaseError(err.detail);
   });
-};
 
 exports.addAlbum = album =>
   albums.create(album).catch(err => {
