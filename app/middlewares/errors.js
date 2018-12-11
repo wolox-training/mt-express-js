@@ -19,7 +19,8 @@ const statusCodes = {
   [errors.NO_ACCESS_PERMISSION]: 401,
   [errors.DEPENDENCY_FAILURE]: 400,
   [errors.NOT_FOUND]: 404,
-  [errors.SESSION_EXPIRED]: 401
+  [errors.SESSION_EXPIRED]: 401,
+  [errors.ALBUM_ALREADY_OWNED]: 403
 };
 
 exports.handle = (error, req, res, next) => {

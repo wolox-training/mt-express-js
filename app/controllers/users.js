@@ -126,7 +126,7 @@ exports.addAdmin = (req, res, next) => {
 exports.listAlbums = (req, res, next) =>
   albumsManager
     .getAllAlbums()
-    .then(allAlbums => res.status(200).send(allAlbums))
+    .then(allAlbums => res.status(200).send({ allAlbums }))
     .catch(next);
 
 exports.listUserAlbums = (req, res, next) =>
@@ -140,3 +140,22 @@ exports.listPhotos = (req, res, next) =>
     .getPhotosByAlbumId(req.params.id)
     .then(photos => res.status(200).send({ photos }))
     .catch(next);
+
+exports.buyAlbum = (req, res, next) => {
+  const boughtAlbum = {
+    id: parseInt(req.params.id),
+    ownerId: parseInt(req.user.id)
+  };
+
+  return albumsManager
+    .findAlbumById(req.params.id)
+    .then(foundAlbum => {
+      if (!foundAlbum) throw errors.notFoundFailure();
+
+      boughtAlbum.title = foundAlbum.title;
+      return albumsManager.addAlbum(boughtAlbum).then(() => {
+        res.status(200).send({ boughtAlbum });
+      });
+    })
+    .catch(next);
+};
