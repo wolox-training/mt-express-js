@@ -399,7 +399,6 @@ describe('User Tests', () => {
           .set('authorization', token)
           .then(res3 => {
             res3.should.have.status(200);
-            console.log(res3.body);
             res3.body.allAlbums[0].userId.should.equal(1);
             res3.body.allAlbums[0].id.should.equal(1);
             res3.body.allAlbums[0].title.should.equal('quidem molestiae enim');
