@@ -34,8 +34,19 @@ exports.validateAlbumsRequest = (req, res, next) => {
   return next();
 };
 
-exports.validatePhotosRequest = (req, res, next) => {
-  return albumsManager
+exports.validateAlbumsBuyRequest = (req, res, next) => {
+  albumsManager
+    .getAlbumByParams({
+      id: parseInt(req.params.id),
+      ownerId: parseInt(req.user.id)
+    })
+    .then(foundAlbum => {
+      if (foundAlbum) return next(errors.albumAlreadyOwned());
+    })
+    .then(next);
+};
+exports.validatePhotosRequest = (req, res, next) =>
+  albumsManager
     .getAlbumByParams({
       id: req.params.id,
       ownerId: req.user.id
@@ -43,6 +54,4 @@ exports.validatePhotosRequest = (req, res, next) => {
     .then(album => {
       if (!album) return next(errors.notFoundFailure('Could not find a match for the provided album id'));
       return next();
-    })
-    .catch(next);
-};
+    });

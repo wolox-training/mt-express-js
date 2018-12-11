@@ -143,23 +143,18 @@ exports.listPhotos = (req, res, next) =>
 
 exports.buyAlbum = (req, res, next) => {
   const boughtAlbum = {
-    id: Number(req.params.id),
-    ownerId: Number(req.user.id)
+    id: parseInt(req.params.id),
+    ownerId: parseInt(req.user.id)
   };
 
   return albumsManager
     .findAlbumById(req.params.id)
-    .then(foundAlbum1 => {
-      if (!foundAlbum1) throw errors.notFoundFailure();
+    .then(foundAlbum => {
+      if (!foundAlbum) throw errors.notFoundFailure();
 
-      boughtAlbum.title = String(foundAlbum1.title);
-
-      return albumsManager.getAlbumByParams(boughtAlbum).then(foundAlbum2 => {
-        if (foundAlbum2) throw errors.albumAlreadyOwned();
-
-        return albumsManager.addAlbum(boughtAlbum).then(() => {
-          res.status(200).send({ boughtAlbum });
-        });
+      boughtAlbum.title = foundAlbum.title;
+      return albumsManager.addAlbum(boughtAlbum).then(() => {
+        res.status(200).send({ boughtAlbum });
       });
     })
     .catch(next);
