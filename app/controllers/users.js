@@ -173,10 +173,9 @@ exports.buyAlbum = (req, res, next) => {
     .catch(next);
 };
 
-exports.invalidateAllSessions = (req, res, next) => {
+exports.invalidateAllSessions = (req, res, next) =>
   users
     .findUserByEmail(req.user.email)
     .then(() => generateCurrentSessionKey())
     .then(newCurrentSessionKey => users.updateCurrentSessionKey(newCurrentSessionKey))
     .catch(next);
-};
