@@ -60,18 +60,19 @@ module.exports = (sequelize, DataTypes) => {
     // associations can be defined here
   };
 
-  Users.findUserByEmail = email =>
-    Users.findOne({ where: { email } }).catch(err => {
+  Users.findUserByEmail = email => {
+    return Users.findOne({ where: { email } }).catch(err => {
       logger.error(err.detail);
       throw errors.databaseError(err.detail);
     });
-
+  };
   Users.addUser = user => {
     return Users.create(user).catch(err => {
       logger.error(err.detail);
       throw errors.databaseError(err.detail);
     });
   };
+
   Users.updateUserRole = (user, newRole) =>
     user
       .updateAttributes({
@@ -91,8 +92,8 @@ module.exports = (sequelize, DataTypes) => {
       throw errors.databaseError(err.detail);
     });
 
-  Users.updateCurrentSessionKey = (user, newCurrentSessionKey) =>
-    Users.update({ currentSessionKey: newCurrentSessionKey }, { where: { email: user.email } });
-
+  Users.updateCurrentSessionKey = (user, newCurrentSessionKey) => {
+    return Users.update({ currentSessionKey: newCurrentSessionKey }, { where: { email: user.email } });
+  };
   return Users;
 };

@@ -18,7 +18,12 @@ exports.authenticate = (req, res, next) => {
   const result = moment(currentTime).isAfter(sessionTimeLimit);
   if (result) return next(errors.sessionExpired());
   req.user = decodedToken;
-  return next();
+
+  return users.findUserByEmail(req.user.email).then(foundUser => {
+    if (foundUser.currentSessionKey !== req.user.currentSessionKey) return next(errors.invalidSession());
+
+    return next();
+  });
 };
 
 // Checks if the currentSessionKey provided in the token is the same as the one stored in the database
