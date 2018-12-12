@@ -39,6 +39,11 @@ module.exports = (sequelize, DataTypes) => {
       role: {
         type: DataTypes.STRING,
         allowNull: false
+      },
+
+      currentSessionKey: {
+        type: DataTypes.STRING,
+        allowNull: false
       }
     },
 
@@ -61,12 +66,12 @@ module.exports = (sequelize, DataTypes) => {
       throw errors.databaseError(err.detail);
     });
 
-  Users.addUser = user =>
-    Users.create(user).catch(err => {
+  Users.addUser = user => {
+    return Users.create(user).catch(err => {
       logger.error(err.detail);
       throw errors.databaseError(err.detail);
     });
-
+  };
   Users.updateUserRole = (user, newRole) =>
     user
       .updateAttributes({
@@ -86,11 +91,8 @@ module.exports = (sequelize, DataTypes) => {
       throw errors.databaseError(err.detail);
     });
 
-  Users.updateCurrentSessionKey = newCurrentSessionKey =>
-    Users.updateAttributes({ currentSessionKey: newCurrentSessionKey }).catch(err => {
-      logger.error(err.detail);
-      throw errors.databaseError(err.detail);
-    });
+  Users.updateCurrentSessionKey = (user, newCurrentSessionKey) =>
+    Users.update({ currentSessionKey: newCurrentSessionKey }, { where: { email: user.email } });
 
   return Users;
 };

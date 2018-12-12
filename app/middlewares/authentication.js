@@ -12,7 +12,7 @@ exports.authenticate = (req, res, next) => {
   const decodedToken = tokenManager.decodeToken(req.headers.authorization);
   const sessionTimeLimit = moment(decodedToken.creationTime).add(
     config.common.session.expirationTime,
-    'seconds'
+    'hours'
   );
   const currentTime = moment();
   const result = moment(currentTime).isAfter(sessionTimeLimit);

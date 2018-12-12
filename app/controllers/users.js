@@ -61,20 +61,35 @@ const generateCurrentSessionKey = () => {
     throw errors.defaultError(err);
   });
 };
+
 const addUser = (user, role) => {
   user.role = role;
+
+  const encryptPasswordPromise = encryptPassword(user.password);
+  const generateCurrentSessionKeyPromise = generateCurrentSessionKey();
+
   return hasValidFields(user)
     .then(() => hasUniqueEmail(user.email))
-    .then(() => encryptPassword(user.password))
-    .then(hashedPassword => {
+    .then(() => Promise.all[(encryptPasswordPromise, generateCurrentSessionKeyPromise)])
+    .then(([hashedPassword, currentSessionKey]) => {
       user.password = hashedPassword;
-      return Promise.resolve();
-    })
-    .then(() => generateCurrentSessionKey())
-    .then(currentSessionKey => {
       user.currentSessionKey = currentSessionKey;
+
       return users.addUser(user);
     });
+
+  // return hasValidFields(user)
+  //   .then(() => hasUniqueEmail(user.email))
+  //   .then(() => encryptPassword(user.password))
+  //   .then(hashedPassword => {
+  //     user.password = hashedPassword;
+  //     return Promise.resolve();
+  //   })
+  //   .then(() => generateCurrentSessionKey())
+  //   .then(currentSessionKey => {
+  //     user.currentSessionKey = currentSessionKey;
+  //     return users.addUser(user);
+  //   });
 };
 
 exports.signUp = (req, res, next) => {
@@ -174,8 +189,10 @@ exports.buyAlbum = (req, res, next) => {
 };
 
 exports.invalidateAllSessions = (req, res, next) =>
-  users
-    .findUserByEmail(req.user.email)
-    .then(() => generateCurrentSessionKey())
-    .then(newCurrentSessionKey => users.updateCurrentSessionKey(newCurrentSessionKey))
-    .catch(next);
+  generateCurrentSessionKey()
+    .then(newCurrentSessionKey => users.updateCurrentSessionKey(req.user, newCurrentSessionKey))
+    .then(() =>
+      res.status(200).send({
+        message: 'Invalidated all sessions'
+      })
+    );

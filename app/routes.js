@@ -14,7 +14,6 @@ exports.init = app => {
   );
   app.get('/albums', [authentication.authenticate], authentication.validateSession, users.listAlbums);
 
-  app.get('/albums', [authentication.authenticate, authentication.validateSession], users.listAlbums);
   app.get(
     '/users/:user_id/albums',
     [authentication.authenticate, authentication.validateSession, authentication.validateAlbumsRequest],
@@ -33,5 +32,9 @@ exports.init = app => {
     users.buyAlbum
   );
 
-  app.post('/users/sessions/invalidate_all', [], users.invalidateAllSessions);
+  app.post(
+    '/users/sessions/invalidate_all',
+    [authentication.authenticate, authentication.validateSession],
+    users.invalidateAllSessions
+  );
 };

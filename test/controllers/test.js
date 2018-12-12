@@ -729,4 +729,47 @@ describe('User Tests', () => {
       });
     });
   });
+
+  describe('/users/sessions/invalidate_all POST', () => {
+    it('A user is logged in, invalidates sessions and cannot make any more requests', done => {
+      let userToken = null;
+
+      chai
+        .request(server)
+        .post('/signup')
+        .send({
+          email: 'mandragora@wolox.com.ar',
+          password: '12345678',
+          firstName: 'Miguel',
+          lastName: 'Toscano'
+        })
+        .then(() => {
+          chai
+            .request(server)
+            .post('/signin')
+            .send({
+              email: 'mandragora@wolox.com.ar',
+              password: '12345678'
+            })
+            .then(res => {
+              userToken = res.body.token;
+
+              chai
+                .request(server)
+                .post('/users/sessions/invalidate_all')
+                .set('authorization', userToken)
+                .then(() => {
+                  chai
+                    .request(server)
+                    .get('/albums')
+                    .set('authorization', userToken)
+                    .catch(err => {
+                      err.should.have.status(403);
+                      done();
+                    });
+                });
+            });
+        });
+    });
+  });
 });
