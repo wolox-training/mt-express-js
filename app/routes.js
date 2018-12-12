@@ -6,26 +6,32 @@ exports.init = app => {
 
   app.post('/signin', [], users.signIn);
 
-  app.get('/users', [authentication.authenticate], users.listUsers);
-  app.post('/admin/users', [authentication.authenticate, authentication.validatePermission], users.addAdmin);
-  app.get('/albums', [authentication.authenticate], users.listAlbums);
+  app.get('/users', [authentication.authenticate, authentication.validateSession], users.listUsers);
+  app.post(
+    '/admin/users',
+    [authentication.authenticate, authentication.validateSession, authentication.validatePermission],
+    users.addAdmin
+  );
+  app.get('/albums', [authentication.authenticate], authentication.validateSession, users.listAlbums);
 
-  app.get('/albums', [authentication.authenticate], users.listAlbums);
+  app.get('/albums', [authentication.authenticate, authentication.validateSession], users.listAlbums);
   app.get(
     '/users/:user_id/albums',
-    [authentication.authenticate, authentication.validateAlbumsRequest],
+    [authentication.authenticate, authentication.validateSession, authentication.validateAlbumsRequest],
     users.listUserAlbums
   );
 
   app.get(
     '/users/albums/:id/photos',
-    [authentication.authenticate, authentication.validatePhotosRequest],
+    [authentication.authenticate, authentication.validateSession, authentication.validatePhotosRequest],
     users.listPhotos
   );
 
   app.post(
     '/albums/:id',
-    [authentication.authenticate, authentication.validateAlbumsBuyRequest],
+    [authentication.authenticate, authentication.validateSession, authentication.validateAlbumsBuyRequest],
     users.buyAlbum
   );
+
+  app.post('/users/sessions/invalidate_all', [], users.invalidateAllSessions);
 };

@@ -44,3 +44,6 @@ exports.sessionExpired = () => internalError(exports.SESSION_EXPIRED, exports.SE
 
 exports.ALBUM_ALREADY_OWNED = 'You already own this album';
 exports.albumAlreadyOwned = () => internalError(exports.ALBUM_ALREADY_OWNED, exports.ALBUM_ALREADY_OWNED);
+
+exports.INVALID_SESSION = 'Invalid Session';
+exports.invalidSession = () => internalError(exports.INVALID_SESSION, exports.INVALID_SESSION);

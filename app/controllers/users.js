@@ -53,13 +53,26 @@ const encryptPassword = password =>
     throw errors.defaultError(err);
   });
 
+const generateCurrentSessionKey = () => {
+  const currentTime = moment();
+
+  return bcrypt.hash(String(currentTime), constants.SALT).catch(err => {
+    logger.error(err);
+    throw errors.defaultError(err);
+  });
+};
 const addUser = (user, role) => {
   user.role = role;
   return hasValidFields(user)
     .then(() => hasUniqueEmail(user.email))
     .then(() => encryptPassword(user.password))
-    .then(hash => {
-      user.password = hash;
+    .then(hashedPassword => {
+      user.password = hashedPassword;
+      return Promise.resolve();
+    })
+    .then(() => generateCurrentSessionKey())
+    .then(currentSessionKey => {
+      user.currentSessionKey = currentSessionKey;
       return users.addUser(user);
     });
 };
@@ -157,5 +170,13 @@ exports.buyAlbum = (req, res, next) => {
         res.status(200).send({ boughtAlbum });
       });
     })
+    .catch(next);
+};
+
+exports.invalidateAllSessions = (req, res, next) => {
+  users
+    .findUserByEmail(req.user.email)
+    .then(() => generateCurrentSessionKey())
+    .then(newCurrentSessionKey => users.updateCurrentSessionKey(newCurrentSessionKey))
     .catch(next);
 };

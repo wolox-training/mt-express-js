@@ -86,5 +86,11 @@ module.exports = (sequelize, DataTypes) => {
       throw errors.databaseError(err.detail);
     });
 
+  Users.updateCurrentSessionKey = newCurrentSessionKey =>
+    Users.updateAttributes({ currentSessionKey: newCurrentSessionKey }).catch(err => {
+      logger.error(err.detail);
+      throw errors.databaseError(err.detail);
+    });
+
   return Users;
 };
