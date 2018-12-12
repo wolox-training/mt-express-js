@@ -126,7 +126,7 @@ exports.addAdmin = (req, res, next) => {
 exports.listAlbums = (req, res, next) =>
   albumsManager
     .getAllAlbums()
-    .then(allAlbums => res.status(200).send(allAlbums))
+    .then(allAlbums => res.status(200).send({ allAlbums }))
     .catch(next);
 
 exports.listUserAlbums = (req, res, next) =>
@@ -142,27 +142,19 @@ exports.listPhotos = (req, res, next) =>
     .catch(next);
 
 exports.buyAlbum = (req, res, next) => {
-  const albumId = req.params.id;
-  const userId = req.user.id;
   const boughtAlbum = {
-    id: req.params.id,
-    ownerId: req.user.id
+    id: parseInt(req.params.id),
+    ownerId: parseInt(req.user.id)
   };
-  // Validar que el album exista
-  // Validar que el usuario no posea dicho album
-  // Traer el titulo del album desde el jsonplaceholder.com
-  // Cargar dicho album en la base de datos
+
   return albumsManager
     .findAlbumById(req.params.id)
-    .then(foundAlbum1 => {
-      if (!foundAlbum1) throw errors.notFoundFailure();
+    .then(foundAlbum => {
+      if (!foundAlbum) throw errors.notFoundFailure();
 
-      boughtAlbum.title = foundAlbum1.title;
-
-      return albumsManager.findAlbumByParams(boughtAlbum).then(foundAlbum2 => {
-        if (foundAlbum2) throw errors.albumAlreadyOwned();
-
-        albumsManager.addAlbum(boughtAlbum);
+      boughtAlbum.title = foundAlbum.title;
+      return albumsManager.addAlbum(boughtAlbum).then(() => {
+        res.status(200).send({ boughtAlbum });
       });
     })
     .catch(next);

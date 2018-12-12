@@ -29,20 +29,29 @@ exports.validatePermission = (req, res, next) => {
 // Checks that a regular user can just request for his own albums, while
 // an admin can request for any user's album
 exports.validateAlbumsRequest = (req, res, next) => {
-  if (req.user.role === constants.REGULAR_ROLE && req.user.id !== Number(req.params.user_id))
+  if (req.user.role === constants.REGULAR_ROLE && req.user.id !== parseInt(req.params.user_id))
     return next(errors.noAccessPermission());
   return next();
 };
 
-exports.validatePhotosRequest = (req, res, next) => {
-  return albumsManager
+exports.validateAlbumsBuyRequest = (req, res, next) => {
+  albumsManager
     .getAlbumByParams({
-      id: req.params.id,
-      ownerId: req.user.id
+      id: parseInt(req.params.id),
+      ownerId: parseInt(req.user.id)
+    })
+    .then(foundAlbum => {
+      if (foundAlbum) return next(errors.albumAlreadyOwned());
+      return next();
+    });
+};
+exports.validatePhotosRequest = (req, res, next) =>
+  albumsManager
+    .getAlbumByParams({
+      id: parseInt(req.params.id),
+      ownerId: parseInt(req.user.id)
     })
     .then(album => {
       if (!album) return next(errors.notFoundFailure('Could not find a match for the provided album id'));
       return next();
-    })
-    .catch(next);
-};
+    });
