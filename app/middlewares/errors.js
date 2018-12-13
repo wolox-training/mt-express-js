@@ -20,7 +20,8 @@ const statusCodes = {
   [errors.DEPENDENCY_FAILURE]: 400,
   [errors.NOT_FOUND]: 404,
   [errors.SESSION_EXPIRED]: 401,
-  [errors.ALBUM_ALREADY_OWNED]: 403
+  [errors.ALBUM_ALREADY_OWNED]: 403,
+  [errors.INVALID_SESSION]: 403
 };
 
 exports.handle = (error, req, res, next) => {

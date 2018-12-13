@@ -7,7 +7,9 @@ exports.init = app => {
   app.post('/signin', [], users.signIn);
 
   app.get('/users', [authentication.authenticate], users.listUsers);
+
   app.post('/admin/users', [authentication.authenticate, authentication.validatePermission], users.addAdmin);
+
   app.get('/albums', [authentication.authenticate], users.listAlbums);
 
   app.get(
@@ -27,4 +29,6 @@ exports.init = app => {
     [authentication.authenticate, authentication.validateAlbumsBuyRequest],
     users.buyAlbum
   );
+
+  app.post('/users/sessions/invalidate_all', [authentication.authenticate], users.invalidateAllSessions);
 };

@@ -53,20 +53,29 @@ const encryptPassword = password =>
     throw errors.defaultError(err);
   });
 
+const generateCurrentSessionKey = () =>
+  bcrypt.hash(moment().toISOString(), constants.SALT).catch(err => {
+    logger.error(err);
+    throw errors.defaultError(err);
+  });
+
 const addUser = (user, role) => {
   user.role = role;
+
+  const encryptPasswordPromise = encryptPassword(user.password);
+  const generateCurrentSessionKeyPromise = generateCurrentSessionKey();
   return hasValidFields(user)
     .then(() => hasUniqueEmail(user.email))
-    .then(() => encryptPassword(user.password))
-    .then(hash => {
-      user.password = hash;
+    .then(() => Promise.all([encryptPasswordPromise, generateCurrentSessionKeyPromise]))
+    .then(([hashedPassword, currentSessionKey]) => {
+      user.password = hashedPassword;
+      user.currentSessionKey = currentSessionKey;
       return users.addUser(user);
     });
 };
 
 exports.signUp = (req, res, next) => {
   const user = req.body;
-
   return addUser(user, constants.REGULAR_ROLE)
     .then(() =>
       res.status(200).send({
@@ -110,6 +119,16 @@ exports.listUsers = (req, res, next) => {
 };
 
 // Only an admin can add another admin
+exports.addAdmin = (req, res, next) =>
+  users
+    .findUserByEmail(req.body.email)
+    .then(foundUser => {
+      if (foundUser) return users.updateUserRole(foundUser, constants.ADMIN_ROLE);
+      return addUser(req.body, constants.ADMIN_ROLE);
+    })
+    .then(() => res.status(200).send({ message: 'Admin added' }))
+    .catch(next);
+
 exports.addAdmin = (req, res, next) => {
   const user = req.body;
 
@@ -159,3 +178,12 @@ exports.buyAlbum = (req, res, next) => {
     })
     .catch(next);
 };
+
+exports.invalidateAllSessions = (req, res, next) =>
+  generateCurrentSessionKey()
+    .then(newCurrentSessionKey => users.updateCurrentSessionKey(req.user, newCurrentSessionKey))
+    .then(() =>
+      res.status(200).send({
+        message: 'Invalidated all sessions'
+      })
+    );

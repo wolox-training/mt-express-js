@@ -4,6 +4,7 @@ const constants = require('../constants');
 const albumsManager = require('../services/albumsManager');
 const moment = require('moment');
 const config = require('../../config');
+const users = require('../models').users;
 
 // Checks if an user is logged in
 exports.authenticate = (req, res, next) => {
@@ -16,8 +17,12 @@ exports.authenticate = (req, res, next) => {
   const currentTime = moment();
   const result = moment(currentTime).isAfter(sessionTimeLimit);
   if (result) return next(errors.sessionExpired());
-  req.user = decodedToken;
-  return next();
+
+  return users.findUserByEmail(decodedToken.email).then(foundUser => {
+    if (foundUser.currentSessionKey !== decodedToken.currentSessionKey) return next(errors.invalidSession());
+    req.user = decodedToken;
+    return next();
+  });
 };
 
 // Checks if the user has admin permission

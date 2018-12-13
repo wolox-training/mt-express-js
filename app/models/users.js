@@ -39,6 +39,11 @@ module.exports = (sequelize, DataTypes) => {
       role: {
         type: DataTypes.STRING,
         allowNull: false
+      },
+
+      currentSessionKey: {
+        type: DataTypes.STRING,
+        allowNull: false
       }
     },
 
@@ -82,7 +87,13 @@ module.exports = (sequelize, DataTypes) => {
       limit,
       offset: (page - 1) * limit
     }).catch(err => {
-      logger.errors(err.details);
+      logger.error(err.detail);
+      throw errors.databaseError(err.detail);
+    });
+
+  Users.updateCurrentSessionKey = (user, newCurrentSessionKey) =>
+    Users.update({ currentSessionKey: newCurrentSessionKey }, { where: { email: user.email } }).catch(err => {
+      logger.error(err.detail);
       throw errors.databaseError(err.detail);
     });
 
