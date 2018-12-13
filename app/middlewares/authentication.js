@@ -20,7 +20,6 @@ exports.authenticate = (req, res, next) => {
 
   return users.findUserByEmail(decodedToken.email).then(foundUser => {
     if (foundUser.currentSessionKey !== decodedToken.currentSessionKey) return next(errors.invalidSession());
-
     req.user = decodedToken;
     return next();
   });

@@ -71,6 +71,7 @@ module.exports = (sequelize, DataTypes) => {
       logger.error(err.detail);
       throw errors.databaseError(err.detail);
     });
+
   Users.updateUserRole = (user, newRole) =>
     user
       .updateAttributes({
@@ -86,12 +87,15 @@ module.exports = (sequelize, DataTypes) => {
       limit,
       offset: (page - 1) * limit
     }).catch(err => {
-      logger.errors(err.details);
+      logger.error(err.detail);
       throw errors.databaseError(err.detail);
     });
 
   Users.updateCurrentSessionKey = (user, newCurrentSessionKey) =>
-    Users.update({ currentSessionKey: newCurrentSessionKey }, { where: { email: user.email } });
+    Users.update({ currentSessionKey: newCurrentSessionKey }, { where: { email: user.email } }).catch(err => {
+      logger.error(err.detail);
+      throw errors.databaseError(err.detail);
+    });
 
   return Users;
 };

@@ -42,6 +42,7 @@ const forceSignUpAsAdmin = (email, password) => {
 
   return bcrypt.hash(password, constants.SALT).then(hash => {
     newUser.password = hash;
+    newUser.currentSessionKey = '12345';
     return users.addUser(newUser);
   });
 };
