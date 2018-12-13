@@ -26,14 +26,6 @@ exports.authenticate = (req, res, next) => {
   });
 };
 
-// Checks if the currentSessionKey provided in the token is the same as the one stored in the database
-exports.validateSession = (req, res, next) =>
-  users.findUserByEmail(req.user.email).then(foundUser => {
-    if (foundUser.currentSessionKey !== req.user.currentSessionKey) return next(errors.invalidSession());
-
-    return next();
-  });
-
 // Checks if the user has admin permission
 exports.validatePermission = (req, res, next) => {
   if (req.user.role !== constants.ADMIN_ROLE) return next(errors.noAccessPermission());
