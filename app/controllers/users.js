@@ -53,14 +53,11 @@ const encryptPassword = password =>
     throw errors.defaultError(err);
   });
 
-const generateCurrentSessionKey = () => {
-  const currentTime = moment();
-
-  return bcrypt.hash(String(currentTime), constants.SALT).catch(err => {
+const generateCurrentSessionKey = () =>
+  bcrypt.hash(moment().toISOString(), constants.SALT).catch(err => {
     logger.error(err);
     throw errors.defaultError(err);
   });
-};
 
 const addUser = (user, role) => {
   user.role = role;
@@ -70,26 +67,13 @@ const addUser = (user, role) => {
 
   return hasValidFields(user)
     .then(() => hasUniqueEmail(user.email))
-    .then(() => Promise.all[(encryptPasswordPromise, generateCurrentSessionKeyPromise)])
+    .then(() => Promise.all([encryptPasswordPromise, generateCurrentSessionKeyPromise]))
     .then(([hashedPassword, currentSessionKey]) => {
       user.password = hashedPassword;
       user.currentSessionKey = currentSessionKey;
 
       return users.addUser(user);
     });
-
-  // return hasValidFields(user)
-  //   .then(() => hasUniqueEmail(user.email))
-  //   .then(() => encryptPassword(user.password))
-  //   .then(hashedPassword => {
-  //     user.password = hashedPassword;
-  //     return Promise.resolve();
-  //   })
-  //   .then(() => generateCurrentSessionKey())
-  //   .then(currentSessionKey => {
-  //     user.currentSessionKey = currentSessionKey;
-  //     return users.addUser(user);
-  //   });
 };
 
 exports.signUp = (req, res, next) => {

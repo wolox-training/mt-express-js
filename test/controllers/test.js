@@ -730,7 +730,7 @@ describe('User Tests', () => {
     });
   });
 
-  describe.only('/users/sessions/invalidate_all POST', () => {
+  describe('/users/sessions/invalidate_all POST', () => {
     it('A user is logged in, invalidates sessions and cannot make any more requests', done => {
       let userToken = null;
 

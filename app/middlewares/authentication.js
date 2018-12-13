@@ -12,16 +12,16 @@ exports.authenticate = (req, res, next) => {
   const decodedToken = tokenManager.decodeToken(req.headers.authorization);
   const sessionTimeLimit = moment(decodedToken.creationTime).add(
     config.common.session.expirationTime,
-    'hours'
+    'seconds'
   );
   const currentTime = moment();
   const result = moment(currentTime).isAfter(sessionTimeLimit);
   if (result) return next(errors.sessionExpired());
-  req.user = decodedToken;
 
-  return users.findUserByEmail(req.user.email).then(foundUser => {
-    if (foundUser.currentSessionKey !== req.user.currentSessionKey) return next(errors.invalidSession());
+  return users.findUserByEmail(decodedToken.email).then(foundUser => {
+    if (foundUser.currentSessionKey !== decodedToken.currentSessionKey) return next(errors.invalidSession());
 
+    req.user = decodedToken;
     return next();
   });
 };
